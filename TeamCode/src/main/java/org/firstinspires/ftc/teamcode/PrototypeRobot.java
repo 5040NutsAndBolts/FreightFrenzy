@@ -91,7 +91,7 @@ public class PrototypeRobot extends LinearOpMode
                     telemetry.addData("Direction State:", rightRampToggle);
 
 
-                    //left ramp moving open and closed
+                    //left ramp open and closed
 
                     if (!leftRampToggle) {
                         if (gamepad2.b) {
