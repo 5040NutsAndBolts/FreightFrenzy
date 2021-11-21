@@ -16,6 +16,7 @@ public class Teleop extends LinearOpMode
     boolean a1Pressed = false;
     boolean rightRampUp = false;
     boolean leftRampUp = false;
+    boolean intakeArmUp = true;
 
 
     @Override
@@ -93,7 +94,7 @@ public class Teleop extends LinearOpMode
             } else if (!gamepad1.a)
                 a1Pressed = false;
 
-            if(leftRampUp)
+            if(intakeArmUp)
                 robot.intakeArmUp();
             else
                 robot.intakeArmDown();
