@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -13,13 +14,16 @@ public class Hardware
     //The linear slide motors
     public DcMotor depositSlide;
 
-    //drive train motors
-    DcMotor frontLeft;
-    DcMotor backLeft;
-    DcMotor frontRight;
-    DcMotor backRight;
+    private CRServo leftDuckSpinner;
+    private CRServo rightDuckSpinner;
 
-    DcMotor intake;
+    //drive train motors
+    private DcMotor frontLeft;
+    private DcMotor backLeft;
+    private DcMotor frontRight;
+    private DcMotor backRight;
+
+    private CRServo intakeSweeper;
 
     //Deposit servo flicker and ramps
     private Servo depositFlicker;
@@ -29,7 +33,14 @@ public class Hardware
     public Hardware(HardwareMap hardwareMap)
     {
 
-        //drive motors
+        //Intake
+        intakeSweeper = hardwareMap.crservo.get("Intake Sweeper");
+
+        //Duck spinners
+        leftDuckSpinner = hardwareMap.crservo.get("Left Duck Spinner");
+        rightDuckSpinner = hardwareMap.crservo.get("Right Duck Spinner");
+
+        //Drive motors
         frontLeft = hardwareMap.dcMotor.get("Front Left");
         backLeft = hardwareMap.dcMotor.get("Back Left");
         frontRight = hardwareMap.dcMotor.get("Front Right");
@@ -38,7 +49,7 @@ public class Hardware
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intake = hardwareMap.get(DcMotor.class, "Intake");
+        //Deposit
         depositSlide = hardwareMap.get(DcMotor.class, "Deposit Slide");
         leftRamp = hardwareMap.get(Servo.class, "Left Ramp");
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
@@ -46,17 +57,25 @@ public class Hardware
 
     }
 
+    //Deposit ramp positions
     public void leftRampUp(){leftRamp.setPosition(0);}
     public void leftRampDown(){leftRamp.setPosition(1);}
     public void rightRampUp(){rightRamp.setPosition(0);}
     public void rightRampDown(){rightRamp.setPosition(1);}
 
+    //Deposit flicker positions
     public void depositLeft(){depositFlicker.setPosition(0);}
     public void depositRight(){depositFlicker.setPosition(1);}
     public void depositNeutral(){depositFlicker.setPosition(.5);}
 
-    public void setIntakePower(double power){intake.setPower(power);}
+    //Run ducks spinners
+    public void setLeftDuckSpinnerPower(double power){leftDuckSpinner.setPower(power);}
+    public void setRightDuckSpinnerPower(double power){rightDuckSpinner.setPower(power);}
 
+    //Intake methods
+    public void setIntakePower(double power){intakeSweeper.setPower(power);}
+
+    //Set drive power
     public void drive(double forward, double sideways, double rotation) {
 
         //adds all the inputs together to get the number to scale it by
@@ -73,8 +92,6 @@ public class Hardware
         backLeft.setPower(forward + rotation + sideways);
         frontRight.setPower(forward - rotation + sideways);
         backRight.setPower(forward - rotation - sideways);
-        //Left Front = +Speed + Turn - Strafe      Right Front = +Speed - Turn + Strafe
-        //Left Rear  = +Speed + Turn + Strafe      Right Rear  = +Speed - Turn - Strafe
     }
 
 }

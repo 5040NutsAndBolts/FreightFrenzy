@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name="",group="Teleop")
+@TeleOp(name="Teleop",group="Teleop")
 public class Teleop extends LinearOpMode
 {
 
@@ -76,7 +76,12 @@ public class Teleop extends LinearOpMode
             else
                 robot.setIntakePower(gamepad1.left_trigger);
 
+            //Set drivetrain power
             robot.drive(gamepad1.left_stick_y,gamepad1.left_stick_x,gamepad1.right_stick_x);
+
+            //Set duck spinner power
+            robot.setLeftDuckSpinnerPower(gamepad2.left_trigger);
+            robot.setRightDuckSpinnerPower(gamepad2.right_trigger);
 
         }
     }
