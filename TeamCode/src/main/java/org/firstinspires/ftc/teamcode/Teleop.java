@@ -13,8 +13,10 @@ public class Teleop extends LinearOpMode
 
     boolean x2Pressed = false;
     boolean a2Pressed = false;
+    boolean a1Pressed = false;
     boolean rightRampUp = false;
     boolean leftRampUp = false;
+
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -82,6 +84,19 @@ public class Teleop extends LinearOpMode
             //Set duck spinner power
             robot.setLeftDuckSpinnerPower(gamepad2.left_trigger);
             robot.setRightDuckSpinnerPower(gamepad2.right_trigger);
+
+            //Toggle Intake Arm Up & Down when gamepad1.a is pressed
+            if (!a1Pressed && gamepad1.a)
+            {
+                a1Pressed = true;
+                leftRampUp = !leftRampUp;
+            } else if (!gamepad1.a)
+                a1Pressed = false;
+
+            if(leftRampUp)
+                robot.intakeArmUp();
+            else
+                robot.intakeArmDown();
 
         }
     }

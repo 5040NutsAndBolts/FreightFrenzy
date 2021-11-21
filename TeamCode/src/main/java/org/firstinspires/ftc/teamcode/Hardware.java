@@ -23,6 +23,7 @@ public class Hardware
     private DcMotor frontRight;
     private DcMotor backRight;
 
+    private DcMotor intakeArm;
     private CRServo intakeSweeper;
 
     //Deposit servo flicker and ramps
@@ -35,6 +36,8 @@ public class Hardware
 
         //Intake
         intakeSweeper = hardwareMap.crservo.get("Intake Sweeper");
+        intakeArm = hardwareMap.dcMotor.get("Intake Arm");
+        intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //Duck spinners
         leftDuckSpinner = hardwareMap.crservo.get("Left Duck Spinner");
@@ -74,6 +77,8 @@ public class Hardware
 
     //Intake methods
     public void setIntakePower(double power){intakeSweeper.setPower(power);}
+    public void intakeArmUp(){intakeArm.setTargetPosition(0);}
+    public void intakeArmDown(){intakeArm.setTargetPosition(1);}
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {
