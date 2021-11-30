@@ -14,8 +14,9 @@ public class Teleop extends LinearOpMode
     boolean x2Pressed = false;
     boolean a2Pressed = false;
     boolean a1Pressed = false;
-    boolean rightRampUp = false;
-    boolean leftRampUp = false;
+    boolean rightRampUp = true;
+    boolean leftRampUp = true;
+    boolean intakeUp = true;
 
 
     @Override
@@ -76,7 +77,7 @@ public class Teleop extends LinearOpMode
             if(gamepad1.right_trigger>0)
                 robot.setIntakePower(gamepad1.right_trigger);
             else
-                robot.setIntakePower(gamepad1.left_trigger);
+                robot.setIntakePower(-gamepad1.left_trigger);
 
             //Set drivetrain power
             robot.drive(gamepad1.left_stick_y,gamepad1.left_stick_x,gamepad1.right_stick_x);
@@ -89,14 +90,24 @@ public class Teleop extends LinearOpMode
             if (!a1Pressed && gamepad1.a)
             {
                 a1Pressed = true;
-                leftRampUp = !leftRampUp;
+                intakeUp = !intakeUp;
             } else if (!gamepad1.a)
                 a1Pressed = false;
 
-            if(leftRampUp)
+            if(intakeUp)
                 robot.intakeArmUp();
             else
+            {
+                robot.closeIntake();
                 robot.intakeArmDown();
+            }
+
+            if(robot.intakeArmPosition()>-12)
+                robot.openIntake();
+
+
+            telemetry.addData("",robot.intakeArmPosition());
+            telemetry.update();
 
         }
     }

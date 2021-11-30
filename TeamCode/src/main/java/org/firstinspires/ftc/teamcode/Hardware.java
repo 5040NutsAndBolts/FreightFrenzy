@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.helperclasses.ThreadPool;
+
 import static java.lang.Math.abs;
 
 public class Hardware
@@ -30,6 +32,11 @@ public class Hardware
     private Servo depositFlicker;
     private Servo rightRamp;
     private Servo leftRamp;
+    private Servo intakeBlocker;
+
+    private boolean intakeUp = true;
+
+    public ThreadPool hardwarePool;
 
     public Hardware(HardwareMap hardwareMap)
     {
@@ -37,7 +44,12 @@ public class Hardware
         //Intake
         intakeSweeper = hardwareMap.crservo.get("Intake Sweeper");
         intakeArm = hardwareMap.dcMotor.get("Intake Arm");
+        intakeBlocker = hardwareMap.servo.get("Intake Blocker");
+        intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakeArm.setTargetPosition(0);
+        intakeArm.setPower(1);
         intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //Duck spinners
         leftDuckSpinner = hardwareMap.crservo.get("Left Duck Spinner");
@@ -56,7 +68,10 @@ public class Hardware
         depositSlide = hardwareMap.get(DcMotor.class, "Deposit Slide");
         leftRamp = hardwareMap.get(Servo.class, "Left Ramp");
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
-        depositFlicker = hardwareMap.get(Servo.class, "Deposite Flicker");
+        depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
+
+        //Threadpool
+        ThreadPool.pool.submit(intakeBrakeManager);
 
     }
 
@@ -77,8 +92,39 @@ public class Hardware
 
     //Intake methods
     public void setIntakePower(double power){intakeSweeper.setPower(power);}
-    public void intakeArmUp(){intakeArm.setTargetPosition(0);}
-    public void intakeArmDown(){intakeArm.setTargetPosition(1);}
+    public void intakeArmUp()
+    {
+        intakeArm.setTargetPosition(0);
+        intakeUp=true;
+    }
+    public void intakeArmDown()
+    {
+        intakeArm.setTargetPosition(-185);
+        intakeUp=false;
+    }
+    private Thread intakeBrakeManager = new Thread()
+    {
+        @Override
+        public void run()
+        {
+            if((intakeUp&&intakeArm.getCurrentPosition()>-2)||(intakeUp&&intakeArm.getCurrentPosition()<-170))
+            {
+                intakeArm.setPower(0);
+                intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            }
+            else
+            {
+                intakeArm.setPower(1);
+                //maybe should be float I don't know which it is this needs testing
+                intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.UNKNOWN);
+            }
+        }
+    };
+    public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
+    public void openIntake()
+    {intakeBlocker.setPosition(.38);}
+    public void closeIntake(){intakeBlocker.setPosition(.7);}
+
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {
@@ -93,10 +139,10 @@ public class Hardware
             sideways /= scale;
         }
         //setting the motor powers to move
-        frontLeft.setPower(forward + rotation - sideways);
-        backLeft.setPower(forward + rotation + sideways);
-        frontRight.setPower(forward - rotation + sideways);
-        backRight.setPower(forward - rotation - sideways);
+        frontLeft.setPower(forward - rotation - sideways);
+        backLeft.setPower(forward - rotation + sideways);
+        frontRight.setPower(forward + rotation + sideways);
+        backRight.setPower(forward + rotation - sideways);
     }
 
 }
