@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -33,6 +34,8 @@ public class Hardware
     private Servo rightRamp;
     private Servo leftRamp;
     private Servo intakeBlocker;
+
+    public static LinearOpMode currentOpMode;
 
     private boolean intakeUp = true;
 
@@ -70,9 +73,6 @@ public class Hardware
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
         depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
 
-        //Threadpool
-        ThreadPool.pool.submit(intakeBrakeManager);
-
     }
 
     //Deposit ramp positions
@@ -92,38 +92,51 @@ public class Hardware
 
     //Intake methods
     public void setIntakePower(double power){intakeSweeper.setPower(power);}
-    public void intakeArmUp()
+    public void intakeArmUp() { intakeUp=true; }
+    public void intakeArmDown() { intakeUp=false; }
+    public void startIntakeThread()
     {
-        intakeArm.setTargetPosition(0);
-        intakeUp=true;
-    }
-    public void intakeArmDown()
-    {
-        intakeArm.setTargetPosition(-185);
-        intakeUp=false;
+        ThreadPool.pool.submit(intakeBrakeManager);
     }
     private Thread intakeBrakeManager = new Thread()
     {
         @Override
         public void run()
         {
-            if((intakeUp&&intakeArm.getCurrentPosition()>-2)||(intakeUp&&intakeArm.getCurrentPosition()<-170))
+
+            while(currentOpMode.opModeIsActive())
             {
-                intakeArm.setPower(0);
-                intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            }
-            else
-            {
-                intakeArm.setPower(1);
-                //maybe should be float I don't know which it is this needs testing
-                intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.UNKNOWN);
+                if ((intakeUp))
+                {
+                    if (intakeArm.getCurrentPosition() > -4)
+                    {
+                        intakeArm.setPower(0);
+                        intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    } else
+                    {
+                        intakeArm.setTargetPosition(0);
+                        intakeArm.setPower(1);
+                    }
+
+                } else
+                {
+                    if (intakeArm.getCurrentPosition() < -160)
+                    {
+                        intakeArm.setPower(0);
+                        intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    } else
+                    {
+                        intakeArm.setTargetPosition(-185);
+                        intakeArm.setPower(1);
+                    }
+
+                }
             }
         }
     };
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
-    public void openIntake()
-    {intakeBlocker.setPosition(.38);}
-    public void closeIntake(){intakeBlocker.setPosition(.7);}
+    public void openIntake() {intakeBlocker.setPosition(.14);}
+    public void closeIntake(){intakeBlocker.setPosition(.45);}
 
 
     //Set drive power

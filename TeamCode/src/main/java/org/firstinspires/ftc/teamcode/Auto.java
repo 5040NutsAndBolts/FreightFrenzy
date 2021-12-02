@@ -36,6 +36,7 @@ public class Auto extends LinearOpMode
     boolean downPressed=false;
     boolean leftPressed=false;
     boolean rightPressed=false;
+    String errors="";
 
 
 
@@ -47,7 +48,6 @@ public class Auto extends LinearOpMode
         String configName = "";
         String data="";
         String fileName="default";
-        String errors="";
         String[] splitData=new String[0];
         try
         {
@@ -71,7 +71,7 @@ public class Auto extends LinearOpMode
                 saveConfig = false;
                 loadConfig=false;
             }
-            if(gamepad1.right_bumper)
+            if(gamepad1.left_trigger>.4)
             {
                 saveConfig = false;
                 loadConfig=true;
@@ -108,17 +108,8 @@ public class Auto extends LinearOpMode
                 else if(!gamepad1.y)
                     yPressed=false;
                 telemetry.addLine(configName);
-                if(gamepad1.left_bumper)
-                {
-                    try
-                    {
-                        data = new Scanner(new File(Environment.getExternalStorageDirectory() +"/"+ fileName)).useDelimiter("\\Z").next();
-                        splitData=data.split("\n");
-                    } catch (FileNotFoundException e)
-                    {
-                        errors+=e;
-                    }
-                }
+                if(gamepad1.right_bumper)
+                    saveConfigToFile(configName,data);
             }
             else if(loadConfig)
             {
@@ -151,8 +142,18 @@ public class Auto extends LinearOpMode
                 else if(!gamepad1.y)
                     yPressed=false;
                 telemetry.addLine(configName);
-                if(gamepad1.dpad_left)
-                    saveConfigToFile(configName,data);
+                if(gamepad1.right_bumper)
+                {
+                    try
+                    {
+                        data = new Scanner(new File(Environment.getExternalStorageDirectory() +"/"+ configName)).useDelimiter("\\Z").next();
+                        splitData=data.split("\n");
+                    } catch (FileNotFoundException e)
+                    {
+                        errors+=e;
+                    }
+                }
+
             }
             else
             {
@@ -237,7 +238,7 @@ public class Auto extends LinearOpMode
             new FileWriter(name).write(data);
         } catch (IOException e)
         {
-            e.printStackTrace();
+            errors+=e;
         }
 
     }
@@ -250,6 +251,7 @@ public class Auto extends LinearOpMode
         for(String functionS:data)
         {
 
+            telemetry.addLine(functionS);
             switch(functionS)
             {
 
@@ -266,6 +268,8 @@ public class Auto extends LinearOpMode
             }
 
         }
+
+        telemetry.update();
 
         return functions;
 
