@@ -31,6 +31,9 @@ public class Teleop extends LinearOpMode
         robot.rightRampUp();
         robot.leftRampUp();
 
+        Hardware.currentOpMode=this;
+        robot.startIntakeThread();
+
         while (opModeIsActive())
         {
 
@@ -75,9 +78,9 @@ public class Teleop extends LinearOpMode
 
             //Set intake power
             if(gamepad1.right_trigger>0)
-                robot.setIntakePower(gamepad1.right_trigger);
+                robot.setIntakePower(-gamepad1.right_trigger);
             else
-                robot.setIntakePower(-gamepad1.left_trigger);
+                robot.setIntakePower(gamepad1.left_trigger);
 
             //Set drivetrain power
             robot.drive(gamepad1.left_stick_y,gamepad1.left_stick_x,gamepad1.right_stick_x);
@@ -98,11 +101,12 @@ public class Teleop extends LinearOpMode
                 robot.intakeArmUp();
             else
             {
-                robot.closeIntake();
+                if(robot.intakeArmPosition()<-30)
+                    robot.closeIntake();
                 robot.intakeArmDown();
             }
 
-            if(robot.intakeArmPosition()>-12)
+            if(robot.intakeArmPosition()>-30)
                 robot.openIntake();
 
 
