@@ -17,6 +17,11 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+//testing
+import java.io.File;
+import java.io.IOException;
+//end of test
+
 @Autonomous(name="Auto",group="Auto")
 public class Auto extends LinearOpMode
 {
@@ -230,15 +235,22 @@ public class Auto extends LinearOpMode
 
     }
 
+
+
+
     public void saveConfigToFile(String name,String data)
     {
 
         try
         {
-            new FileWriter(name).write(data);
-        } catch (IOException e)
-        {
-            errors+=e;
+                File myObj = new File("filename.txt");
+                myObj.createNewFile();
+                new FileWriter(name).write(data);
+
+            } catch (IOException e) {
+                errors+=e;
+
+
         }
 
     }
