@@ -205,6 +205,19 @@ public class Hardware
     public void openIntake() {intakeBlocker.setPosition(.14);}
     public void closeIntake(){intakeBlocker.setPosition(.45);}
 
+    //funky math hopefully
+    public static int findInchesMoved()
+    {
+        inchesLF = ticksLF * x;
+        inchesLB = ticksLB * x;
+        inchesRF = ticksRF * x;
+        inchesRB = ticksRB * x;
+
+        inchesMoved = (inchesLF + inchesLB + inchesRF + inchesRB) / 4;
+
+        return inchesMoved; 
+    }
+
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {
