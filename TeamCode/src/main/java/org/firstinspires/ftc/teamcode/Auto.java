@@ -242,14 +242,20 @@ public class Auto extends LinearOpMode
     {
 
         try
+
         {
-                File myObj = new File("filename.txt");
-                myObj.createNewFile();
-                new FileWriter(name).write(data);
 
-            } catch (IOException e) {
-                errors+=e;
+            File file = new File(Environment.getExternalStorageDirectory() +"/"+name);
+            if(!file.exists())
+                file.createNewFile();
+            FileWriter writer = new FileWriter(Environment.getExternalStorageDirectory() +"/"+name);
+            writer.write(data);
+            writer.close();
 
+        } catch (IOException e)
+        {
+
+            errors+=e;
 
         }
 

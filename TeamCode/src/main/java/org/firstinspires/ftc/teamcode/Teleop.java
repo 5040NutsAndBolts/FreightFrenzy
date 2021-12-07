@@ -64,7 +64,7 @@ public class Teleop extends LinearOpMode
             //Toggle right ramp when b is pressed
             if (!a2Pressed&&gamepad2.a) {
 
-                x2Pressed = true;
+                a2Pressed = true;
                 rightRampUp=!rightRampUp;
 
             }
@@ -101,16 +101,17 @@ public class Teleop extends LinearOpMode
                 robot.intakeArmUp();
             else
             {
-                if(robot.intakeArmPosition()<-30)
+                if(robot.intakeArmPosition()>30)
                     robot.closeIntake();
                 robot.intakeArmDown();
             }
 
-            if(robot.intakeArmPosition()>-30)
+            if(robot.intakeArmPosition()<30)
                 robot.openIntake();
 
 
-            telemetry.addData("",robot.intakeArmPosition());
+            telemetry.addData("intake arm position",robot.intakeArmPosition());
+            telemetry.addData("deposit position", robot.depositPosition());
             telemetry.update();
 
         }

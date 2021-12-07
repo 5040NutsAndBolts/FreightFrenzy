@@ -35,6 +35,8 @@ public class Hardware
     private Servo leftRamp;
     private Servo intakeBlocker;
 
+    private byte depositLevel=0;
+
     public static LinearOpMode currentOpMode;
 
     private boolean intakeUp = true;
@@ -67,8 +69,14 @@ public class Hardware
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         //Deposit
         depositSlide = hardwareMap.get(DcMotor.class, "Deposit Slide");
+        //depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftRamp = hardwareMap.get(Servo.class, "Left Ramp");
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
         depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
@@ -76,15 +84,73 @@ public class Hardware
     }
 
     //Deposit ramp positions
-    public void leftRampUp(){leftRamp.setPosition(0);}
-    public void leftRampDown(){leftRamp.setPosition(1);}
-    public void rightRampUp(){rightRamp.setPosition(0);}
-    public void rightRampDown(){rightRamp.setPosition(1);}
+    public void leftRampUp(){leftRamp.setPosition(.8);}
+    public void leftRampDown(){leftRamp.setPosition(.57);}
+    public void rightRampUp(){rightRamp.setPosition(.48);}
+    public void rightRampDown(){rightRamp.setPosition(.69);}
 
     //Deposit flicker positions
-    public void depositLeft(){depositFlicker.setPosition(0);}
-    public void depositRight(){depositFlicker.setPosition(1);}
+    public void depositLeft(){depositFlicker.setPosition(.25);}
+    public void depositRight(){depositFlicker.setPosition(.75);}
     public void depositNeutral(){depositFlicker.setPosition(.5);}
+    public int depositPosition(){return depositSlide.getCurrentPosition();}
+
+    private Thread depositBrakeManager = new Thread()
+    {
+        @Override
+        public void run()
+        {
+
+            while(currentOpMode.opModeIsActive())
+            {
+                if ((depositLevel==0))
+                {
+                    if (depositSlide.getCurrentPosition() < 4)
+                    {
+                        depositSlide.setPower(0);
+                        depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    } else
+                    {
+                        depositSlide.setTargetPosition(-5);
+                        depositSlide.setPower(.2);
+                    }
+
+                } else if(depositLevel == 1)
+                {
+                    if (depositSlide.getCurrentPosition() < 100)
+                    {
+                        depositSlide.setPower(.3);
+                        depositSlide.setTargetPosition(105);
+                    }
+                    else if(depositSlide.getCurrentPosition()>110)
+                    {
+                        depositSlide.setPower(.2);
+                        depositSlide.setTargetPosition(105);
+                    }
+                    else
+                    {
+                        depositSlide.setPower(0);
+                        depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    }
+
+                }
+                else
+                {
+
+                    if (depositSlide.getCurrentPosition() > 150)
+                    {
+                        depositSlide.setPower(0);
+                        depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    } else
+                    {
+                        depositSlide.setTargetPosition(155);
+                        depositSlide.setPower(.3);
+                    }
+                }
+
+            }
+        }
+    };
 
     //Run ducks spinners
     public void setLeftDuckSpinnerPower(double power){leftDuckSpinner.setPower(power);}
@@ -108,25 +174,25 @@ public class Hardware
             {
                 if ((intakeUp))
                 {
-                    if (intakeArm.getCurrentPosition() > -4)
+                    if (intakeArm.getCurrentPosition() < 4)
                     {
                         intakeArm.setPower(0);
                         intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     } else
                     {
-                        intakeArm.setTargetPosition(0);
+                        intakeArm.setTargetPosition(-5);
                         intakeArm.setPower(1);
                     }
 
                 } else
                 {
-                    if (intakeArm.getCurrentPosition() < -160)
+                    if (intakeArm.getCurrentPosition() > 160)
                     {
                         intakeArm.setPower(0);
                         intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     } else
                     {
-                        intakeArm.setTargetPosition(-185);
+                        intakeArm.setTargetPosition(185);
                         intakeArm.setPower(1);
                     }
 
@@ -134,6 +200,7 @@ public class Hardware
             }
         }
     };
+
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
     public void openIntake() {intakeBlocker.setPosition(.14);}
     public void closeIntake(){intakeBlocker.setPosition(.45);}
