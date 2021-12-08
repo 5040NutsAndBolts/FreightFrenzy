@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
+
 @TeleOp(name="Teleop",group="Teleop")
 public class Teleop extends LinearOpMode
 {
@@ -108,6 +110,13 @@ public class Teleop extends LinearOpMode
 
             if(robot.intakeArmPosition()<30)
                 robot.openIntake();
+            //color sensor code for the intake to
+            if (robot.colorsensor.alpha() > 8) {
+
+                robot.intakeArmUp();
+                //stop and reset encoder to make it when it sees that the
+                //servo would go up to position zero
+            }
 
 
             telemetry.addData("intake arm position",robot.intakeArmPosition());
