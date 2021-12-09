@@ -37,7 +37,7 @@ public class Hardware
     private Servo leftRamp;
     private Servo intakeBlocker;
 
-    private byte depositLevel=0;
+    public byte depositLevel=0;
 
     public static LinearOpMode currentOpMode;
 
@@ -80,10 +80,13 @@ public class Hardware
 
         //Deposit
         depositSlide = hardwareMap.get(DcMotor.class, "Deposit Slide");
-        //depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftRamp = hardwareMap.get(Servo.class, "Left Ramp");
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
         depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
+        depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        ThreadPool.pool.submit(depositBrakeManager);
 
     }
 
@@ -109,27 +112,27 @@ public class Hardware
             {
                 if ((depositLevel==0))
                 {
-                    if (depositSlide.getCurrentPosition() < 4)
+                    if (depositSlide.getCurrentPosition() < 190)
                     {
                         depositSlide.setPower(0);
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     } else
                     {
-                        depositSlide.setTargetPosition(-5);
-                        depositSlide.setPower(.2);
+                        depositSlide.setTargetPosition(180);
+                        depositSlide.setPower(.3);
                     }
 
                 } else if(depositLevel == 1)
                 {
-                    if (depositSlide.getCurrentPosition() < 100)
+                    if (depositSlide.getCurrentPosition() < 1250)
                     {
                         depositSlide.setPower(.3);
-                        depositSlide.setTargetPosition(105);
+                        depositSlide.setTargetPosition(1300);
                     }
-                    else if(depositSlide.getCurrentPosition()>110)
+                    else if(depositSlide.getCurrentPosition()>1350)
                     {
                         depositSlide.setPower(.2);
-                        depositSlide.setTargetPosition(105);
+                        depositSlide.setTargetPosition(1300);
                     }
                     else
                     {
@@ -141,13 +144,13 @@ public class Hardware
                 else
                 {
 
-                    if (depositSlide.getCurrentPosition() > 150)
+                    if (depositSlide.getCurrentPosition() > 1800)
                     {
                         depositSlide.setPower(0);
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     } else
                     {
-                        depositSlide.setTargetPosition(155);
+                        depositSlide.setTargetPosition(1700);
                         depositSlide.setPower(.3);
                     }
                 }
@@ -168,6 +171,7 @@ public class Hardware
     {
         ThreadPool.pool.submit(intakeBrakeManager);
     }
+    //lower level = 180, middle level = 1300
     private Thread intakeBrakeManager = new Thread()
     {
         @Override
@@ -212,7 +216,7 @@ public class Hardware
     public void closeIntake(){intakeBlocker.setPosition(.45);}
 
     //funky math hopefully
-    public static int findInchesMoved()
+    /*public static int findInchesMoved()
     {
         inchesLF = ticksLF * x;
         inchesLB = ticksLB * x;
@@ -223,7 +227,7 @@ public class Hardware
 
         return inchesMoved; 
     }
-
+*/
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {
