@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,6 +29,7 @@ public class Hardware
 
     private DcMotor intakeArm;
     private CRServo intakeSweeper;
+    public RevColorSensorV3 colorsensor;
 
     //Deposit servo flicker and ramps
     private Servo depositFlicker;
@@ -55,6 +57,8 @@ public class Hardware
         intakeArm.setPower(1);
         intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //Color sensor for intake to sense if something is in the intake
+        colorsensor = hardwareMap.get(RevColorSensorV3.class,"Intake Color Sensor");
 
         //Duck spinners
         leftDuckSpinner = hardwareMap.crservo.get("Left Duck Spinner");
@@ -197,6 +201,8 @@ public class Hardware
                     }
 
                 }
+
+                
             }
         }
     };
