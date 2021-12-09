@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 
+import org.firstinspires.ftc.robotcore.external.navigation.TempUnit;
+
 @TeleOp(name="Teleop",group="Teleop")
 public class Teleop extends LinearOpMode
 {
@@ -25,6 +27,7 @@ public class Teleop extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
 
+        Hardware.currentOpMode=this;
         Hardware robot = new Hardware(hardwareMap);
 
         waitForStart();
@@ -38,6 +41,8 @@ public class Teleop extends LinearOpMode
 
         while (opModeIsActive())
         {
+
+            robot.updateInchesMoved();
 
             //Slide outtake motor controller set up (linear slides)
             robot.depositSlide.setPower(gamepad2.left_stick_y);
@@ -110,17 +115,16 @@ public class Teleop extends LinearOpMode
 
             if(robot.intakeArmPosition()<30)
                 robot.openIntake();
-            //color sensor code for the intake to
-            if (robot.colorsensor.alpha() > 8) {
-
-                robot.intakeArmUp();
-                //stop and reset encoder to make it when it sees that the
-                //servo would go up to position zero
-            }
 
 
-            telemetry.addData("intake arm position",robot.intakeArmPosition());
-            telemetry.addData("deposit position", robot.depositPosition());
+
+            telemetry.addData("Intake arm position",robot.intakeArmPosition());
+            telemetry.addData("Deposit position", robot.depositPosition());
+            telemetry.addData("color",robot.colorsensor.red()+" "+robot.colorsensor.green()+" "+robot.colorsensor.blue()+" "+robot.colorsensor.alpha());
+            telemetry.addData("Temp", robot.imu.getTemperature().toUnit(TempUnit.FARENHEIT).temperature+"°F");
+            telemetry.addData("x",robot.x);
+            telemetry.addData("y",robot.y);
+            telemetry.addData("theta",robot.theta);
             telemetry.update();
 
         }
