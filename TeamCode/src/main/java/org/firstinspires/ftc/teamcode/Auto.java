@@ -49,6 +49,7 @@ public class Auto extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
 
+        //gets data and puts it onto separate lines
         int selection=0;
         String configName = "";
         String data="";
@@ -63,25 +64,31 @@ public class Auto extends LinearOpMode
             errors+=e;
         }
         paths = new AutoPaths(this);
+
+        //loads modifies and saves configs
         while(!isStarted())
         {
-
+            //makes back button save configs
             if(gamepad1.back)
             {
                 saveConfig=true;
                 loadConfig=false;
             }
+            //makes left bumper not save or load configs
             if(gamepad1.left_bumper)
             {
                 saveConfig = false;
                 loadConfig=false;
             }
             if(gamepad1.left_trigger>.4)
+            //makes right bumper load configs
+            if(gamepad1.right_bumper)
             {
                 saveConfig = false;
                 loadConfig=true;
             }
 
+            //saves configs
             if(saveConfig)
             {
                 if(gamepad1.a&&!aPressed)
@@ -116,6 +123,8 @@ public class Auto extends LinearOpMode
                 if(gamepad1.right_bumper)
                     saveConfigToFile(configName,data);
             }
+
+            //loads configs
             else if(loadConfig)
             {
                 if(gamepad1.a&&!aPressed)
@@ -162,7 +171,7 @@ public class Auto extends LinearOpMode
             }
             else
             {
-
+                //changes selected line
                 if(gamepad1.dpad_up&&!upPressed)
                 {
                     upPressed=true;
@@ -238,6 +247,7 @@ public class Auto extends LinearOpMode
 
 
 
+    //saves config to a file
     public void saveConfigToFile(String name,String data)
     {
 
@@ -261,6 +271,7 @@ public class Auto extends LinearOpMode
 
     }
 
+    //converts strings into functions
     public ArrayList<AutoFunction> parseData(String[] data)
     {
 
@@ -270,6 +281,7 @@ public class Auto extends LinearOpMode
         {
 
             telemetry.addLine(functionS);
+            //calls functions
             switch(functionS)
             {
 
@@ -293,6 +305,7 @@ public class Auto extends LinearOpMode
 
     }
 
+    //checks if lines are valid doubles
     private Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     public boolean isNumeric(String strNum) {

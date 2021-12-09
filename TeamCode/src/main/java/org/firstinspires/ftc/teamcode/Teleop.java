@@ -45,7 +45,12 @@ public class Teleop extends LinearOpMode
             robot.updateInchesMoved();
 
             //Slide outtake motor controller set up (linear slides)
-            robot.depositSlide.setPower(gamepad2.left_stick_y);
+            //robot.depositSlide.setPower(gamepad2.left_stick_y);
+            if(gamepad2.right_bumper)
+                robot.depositLevel++;
+
+            if(gamepad2.left_bumper)
+                robot.depositLevel--;
 
             //Move freight into correct deposit side
             if(gamepad2.dpad_left)
