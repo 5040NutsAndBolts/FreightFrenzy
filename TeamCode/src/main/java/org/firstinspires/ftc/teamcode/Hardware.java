@@ -49,6 +49,8 @@ public class Hardware
 
     public byte depositLevel=0;
 
+    public boolean depositOverride;
+
     public static LinearOpMode currentOpMode;
 
     private boolean intakeUp = true;
@@ -152,52 +154,43 @@ public class Hardware
         public void run()
         {
 
-            while(currentOpMode.opModeIsActive())
-            {
-                if ((depositLevel==0))
-                {
-                    if (depositSlide.getCurrentPosition() < 190)
-                    {
+            while(currentOpMode.opModeIsActive()) {
+
+              if(!depositOverride)
+              {
+
+                if ((depositLevel == 0)) {
+                    if (depositSlide.getCurrentPosition() < 190) {
                         depositSlide.setPower(0);
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    } else
-                    {
+                    } else {
                         depositSlide.setTargetPosition(180);
                         depositSlide.setPower(1);
                     }
 
-                } else if(depositLevel == 1)
-                {
-                    if (depositSlide.getCurrentPosition() < 1330)
-                    {
+                } else if (depositLevel == 1) {
+                    if (depositSlide.getCurrentPosition() < 1330) {
                         depositSlide.setPower(1);
                         depositSlide.setTargetPosition(1300);
-                    }
-                    else if(depositSlide.getCurrentPosition()>1370)
-                    {
+                    } else if (depositSlide.getCurrentPosition() > 1370) {
                         depositSlide.setPower(1);
                         depositSlide.setTargetPosition(1350);
-                    }
-                    else
-                    {
+                    } else {
                         depositSlide.setPower(0);
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     }
 
-                }
-                else
-                {
+                } else {
 
-                    if (depositSlide.getCurrentPosition() > 1690)
-                    {
+                    if (depositSlide.getCurrentPosition() > 1690) {
                         depositSlide.setPower(0);
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    } else
-                    {
+                    } else {
                         depositSlide.setTargetPosition(1700);
-                        depositSlide.setPower(.8);
+                        depositSlide.setPower(1);
                     }
                 }
+              }
 
             }
         }

@@ -47,7 +47,6 @@ public class Teleop extends LinearOpMode
             robot.updateInchesMoved();
 
             //Slide outtake motor controller set up (linear slides)
-            //robot.depositSlide.setPower(gamepad2.left_stick_y);
             if(gamepad2.right_bumper&&!bumperPressed&&robot.depositLevel<2)
             {
                 robot.depositLevel++;
@@ -60,6 +59,19 @@ public class Teleop extends LinearOpMode
             }
             else if(!gamepad2.left_bumper&&!gamepad2.right_bumper)
                 bumperPressed=false;
+
+            //override to control deposit with stick
+            if(gamepad2.y)
+            {
+                robot.depositOverride=true;
+                robot.depositSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                robot.depositSlide.setPower(gamepad2.left_stick_y);
+            }
+            else
+            {
+                robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.depositOverride = false;
+            }
 
             //Move freight into correct deposit side
             if(gamepad2.dpad_left)
@@ -137,6 +149,8 @@ public class Teleop extends LinearOpMode
             telemetry.addData("color",robot.colorsensor.red()+" "+robot.colorsensor.green()+" "+robot.colorsensor.blue()+" "+robot.colorsensor.alpha());
             telemetry.addData("Temp", robot.imu.getTemperature().toUnit(TempUnit.FARENHEIT).temperature+"°F");
             telemetry.addData("deposit level", robot.depositLevel);
+            telemetry.addData("deposit override", robot.depositOverride);
+            telemetry.addData("deposit target", robot.depositSlide.getTargetPosition());
             telemetry.addData("x",robot.x);
             telemetry.addData("y",robot.y);
             telemetry.addData("theta",robot.theta);
