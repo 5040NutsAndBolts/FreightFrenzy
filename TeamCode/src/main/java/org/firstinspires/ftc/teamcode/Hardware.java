@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 import org.openftc.revextensions2.RevBulkData;
@@ -38,7 +39,7 @@ public class Hardware
 
     private DcMotor intakeArm;
     private CRServo intakeSweeper;
-    public ColorSensor colorsensor;
+    public RevColorSensorV3 colorsensor;
 
     //Deposit servo flicker and ramps
     private Servo depositFlicker;
@@ -51,8 +52,6 @@ public class Hardware
     public static LinearOpMode currentOpMode;
 
     private boolean intakeUp = true;
-
-    public ThreadPool hardwarePool;
 
     public RevBulkData bulkData;
     public ExpansionHubEx expansionHub;
@@ -73,6 +72,8 @@ public class Hardware
     public Hardware(HardwareMap hardwareMap)
     {
 
+        expansionHub = hardwareMap.get(ExpansionHubEx.class, "Control Hub");
+
         //Intake
         intakeSweeper = hardwareMap.crservo.get("Intake Sweeper");
         intakeArm = hardwareMap.dcMotor.get("Intake Arm");
@@ -83,7 +84,7 @@ public class Hardware
         intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         //Color sensor for intake to sense if something is in the intake
-        colorsensor = hardwareMap.get(ColorSensor.class,"Intake Color Sensor");
+        colorsensor = hardwareMap.get(RevColorSensorV3.class,"Intake Color Sensor");
 
         //Duck spinners
         leftDuckSpinner = hardwareMap.crservo.get("Left Duck Spinner");
@@ -105,10 +106,25 @@ public class Hardware
 
         //Deposit
         depositSlide = hardwareMap.get(DcMotor.class, "Deposit Slide");
-        //depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        depositSlide.setTargetPosition(0);
+        depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftRamp = hardwareMap.get(Servo.class, "Left Ramp");
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
         depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+        currentOpMode.telemetry.addLine("imu init");
+        while(!imu.isGyroCalibrated()&&!currentOpMode.isStopRequested());
+
 
     }
 
@@ -125,6 +141,10 @@ public class Hardware
     public int depositPosition(){return depositSlide.getCurrentPosition();}
 
 
+    public void activateDeposit()
+    {
+        ThreadPool.pool.submit(depositBrakeManager);
+    }
 
     private Thread depositBrakeManager = new Thread()
     {
@@ -143,19 +163,19 @@ public class Hardware
                     } else
                     {
                         depositSlide.setTargetPosition(180);
-                        depositSlide.setPower(.3);
+                        depositSlide.setPower(.5);
                     }
 
                 } else if(depositLevel == 1)
                 {
                     if (depositSlide.getCurrentPosition() < 1250)
                     {
-                        depositSlide.setPower(.3);
+                        depositSlide.setPower(.5);
                         depositSlide.setTargetPosition(1300);
                     }
                     else if(depositSlide.getCurrentPosition()>1350)
                     {
-                        depositSlide.setPower(.2);
+                        depositSlide.setPower(.5);
                         depositSlide.setTargetPosition(1300);
                     }
                     else
@@ -175,7 +195,7 @@ public class Hardware
                     } else
                     {
                         depositSlide.setTargetPosition(1700);
-                        depositSlide.setPower(.3);
+                        depositSlide.setPower(.5);
                     }
                 }
 
@@ -202,33 +222,32 @@ public class Hardware
         public void run()
         {
 
-            boolean lastAlpha = false;
+            boolean blue = false;
             ElapsedTime e = new ElapsedTime();
             e.startTime();
             while(currentOpMode.opModeIsActive())
             {
                 if ((intakeUp))
                 {
-                    if (colorsensor.blue()>700)
+                    if (colorsensor.blue()>700||colorsensor.getDistance(DistanceUnit.INCH)<1)
                     {
-                        if(e.seconds()>.02)
-                        {
-                            intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                            intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                            intakeArm.setPower(0);
-                        }
 
-                    } else
+                        intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                        intakeArm.setPower(0);
+
+                    }
+
+                    else
                     {
-                        intakeArm.setTargetPosition(-15);
+                        intakeArm.setTargetPosition(-10);
                         intakeArm.setPower(1);
-                        e.reset();
                     }
 
                 } else
                 {
-                    e.reset();
+                    blue=false;
                     if (intakeArm.getCurrentPosition() > 160)
                     {
                         intakeArm.setPower(0);
@@ -246,10 +265,52 @@ public class Hardware
         }
     };
 
+    public void updateInchesMoved()
+    {
+
+        try
+        {
+            bulkData = expansionHub.getBulkInputData();
+        }catch(Exception e)
+        {
+
+            return;
+
+        }
+
+        double inchesLF = getDeltaFrontLeftTicks()* inchesPerTick;
+        double inchesLB = getDeltaBackLeftTicks() * inchesPerTick;
+        double inchesRF = getDeltaFrontRightTicks() * inchesPerTick;
+        double inchesRB = getDeltaBackRightTicks() * inchesPerTick;
+
+        double inchesForward = (inchesLF + inchesLB + inchesRF + inchesRB) / 4;
+        double inchesSideways = (-inchesLF + inchesLB + inchesRF - inchesRB) / 4;
+
+        theta=imu.getAngularOrientation().firstAngle;
+        y+=inchesForward*Math.cos(theta)+inchesSideways*Math.sin(theta);
+        x+=inchesForward*Math.sin(theta)+inchesSideways*Math.cos(theta);
+
+        resetDeltaTicks();
+
+    }
+
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
-    public void openIntake() {intakeBlocker.setPosition(.14);}
+    public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
+    public void openIntake() {intakeBlocker.setPosition(.25);}
     public void closeIntake(){intakeBlocker.setPosition(.45);}
 
+    public int getDeltaFrontLeftTicks(){return frontLeftTicks-bulkData.getMotorCurrentPosition(frontLeft);}
+    public int getDeltaFrontRightTicks(){return frontRightTicks-bulkData.getMotorCurrentPosition(frontRight);}
+    public int getDeltaBackLeftTicks(){return backLeftTicks-bulkData.getMotorCurrentPosition(backLeft);}
+    public int getDeltaBackRightTicks(){return backRightTicks-bulkData.getMotorCurrentPosition(backRight);}
+
+    public void resetDeltaTicks()
+    {
+        frontLeftTicks=bulkData.getMotorCurrentPosition(frontLeft);
+        frontRightTicks=bulkData.getMotorCurrentPosition(frontRight);
+        backLeftTicks=bulkData.getMotorCurrentPosition(backLeft);
+        backRightTicks=bulkData.getMotorCurrentPosition(backRight);
+    }
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {

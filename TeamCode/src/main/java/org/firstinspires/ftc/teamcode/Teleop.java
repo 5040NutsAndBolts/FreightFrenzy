@@ -21,6 +21,7 @@ public class Teleop extends LinearOpMode
     boolean rightRampUp = true;
     boolean leftRampUp = true;
     boolean intakeUp = true;
+    boolean bumperPressed=false;
 
 
     @Override
@@ -38,6 +39,7 @@ public class Teleop extends LinearOpMode
 
         Hardware.currentOpMode=this;
         robot.startIntakeThread();
+        robot.activateDeposit();
 
         while (opModeIsActive())
         {
@@ -46,11 +48,18 @@ public class Teleop extends LinearOpMode
 
             //Slide outtake motor controller set up (linear slides)
             //robot.depositSlide.setPower(gamepad2.left_stick_y);
-            if(gamepad2.right_bumper)
+            if(gamepad2.right_bumper&&!bumperPressed)
+            {
                 robot.depositLevel++;
-
-            if(gamepad2.left_bumper)
+                bumperPressed=true;
+            }
+            else if(gamepad2.left_bumper&&!bumperPressed)
+            {
                 robot.depositLevel--;
+                bumperPressed=true;
+            }
+            else if(!gamepad2.left_bumper&&!gamepad2.right_bumper)
+                bumperPressed=false;
 
             //Move freight into correct deposit side
             if(gamepad2.dpad_left)
@@ -127,6 +136,7 @@ public class Teleop extends LinearOpMode
             telemetry.addData("Deposit position", robot.depositPosition());
             telemetry.addData("color",robot.colorsensor.red()+" "+robot.colorsensor.green()+" "+robot.colorsensor.blue()+" "+robot.colorsensor.alpha());
             telemetry.addData("Temp", robot.imu.getTemperature().toUnit(TempUnit.FARENHEIT).temperature+"°F");
+            telemetry.addData("deposit level", robot.depositLevel);
             telemetry.addData("x",robot.x);
             telemetry.addData("y",robot.y);
             telemetry.addData("theta",robot.theta);
