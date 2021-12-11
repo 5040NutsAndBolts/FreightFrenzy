@@ -163,20 +163,20 @@ public class Hardware
                     } else
                     {
                         depositSlide.setTargetPosition(180);
-                        depositSlide.setPower(.5);
+                        depositSlide.setPower(1);
                     }
 
                 } else if(depositLevel == 1)
                 {
-                    if (depositSlide.getCurrentPosition() < 1250)
+                    if (depositSlide.getCurrentPosition() < 1330)
                     {
-                        depositSlide.setPower(.5);
+                        depositSlide.setPower(1);
                         depositSlide.setTargetPosition(1300);
                     }
-                    else if(depositSlide.getCurrentPosition()>1350)
+                    else if(depositSlide.getCurrentPosition()>1370)
                     {
-                        depositSlide.setPower(.5);
-                        depositSlide.setTargetPosition(1300);
+                        depositSlide.setPower(1);
+                        depositSlide.setTargetPosition(1350);
                     }
                     else
                     {
@@ -188,14 +188,14 @@ public class Hardware
                 else
                 {
 
-                    if (depositSlide.getCurrentPosition() > 1800)
+                    if (depositSlide.getCurrentPosition() > 1690)
                     {
                         depositSlide.setPower(0);
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     } else
                     {
                         depositSlide.setTargetPosition(1700);
-                        depositSlide.setPower(.5);
+                        depositSlide.setPower(.8);
                     }
                 }
 
@@ -229,7 +229,7 @@ public class Hardware
             {
                 if ((intakeUp))
                 {
-                    if (colorsensor.blue()>700||colorsensor.getDistance(DistanceUnit.INCH)<1)
+                    if (colorsensor.blue()>800||colorsensor.getDistance(DistanceUnit.INCH)<1)
                     {
 
                         intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -241,13 +241,12 @@ public class Hardware
 
                     else
                     {
-                        intakeArm.setTargetPosition(-10);
+                        intakeArm.setTargetPosition(-20);
                         intakeArm.setPower(1);
                     }
 
                 } else
                 {
-                    blue=false;
                     if (intakeArm.getCurrentPosition() > 160)
                     {
                         intakeArm.setPower(0);
@@ -286,7 +285,7 @@ public class Hardware
         double inchesForward = (inchesLF + inchesLB + inchesRF + inchesRB) / 4;
         double inchesSideways = (-inchesLF + inchesLB + inchesRF - inchesRB) / 4;
 
-        theta=imu.getAngularOrientation().firstAngle;
+        theta=imu.getAngularOrientation().secondAngle;
         y+=inchesForward*Math.cos(theta)+inchesSideways*Math.sin(theta);
         x+=inchesForward*Math.sin(theta)+inchesSideways*Math.cos(theta);
 

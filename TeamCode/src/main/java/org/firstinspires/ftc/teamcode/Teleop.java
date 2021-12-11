@@ -48,12 +48,12 @@ public class Teleop extends LinearOpMode
 
             //Slide outtake motor controller set up (linear slides)
             //robot.depositSlide.setPower(gamepad2.left_stick_y);
-            if(gamepad2.right_bumper&&!bumperPressed)
+            if(gamepad2.right_bumper&&!bumperPressed&&robot.depositLevel<2)
             {
                 robot.depositLevel++;
                 bumperPressed=true;
             }
-            else if(gamepad2.left_bumper&&!bumperPressed)
+            else if(gamepad2.left_bumper&&!bumperPressed&&robot.depositLevel>0)
             {
                 robot.depositLevel--;
                 bumperPressed=true;
