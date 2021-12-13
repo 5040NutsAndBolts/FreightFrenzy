@@ -29,6 +29,7 @@ public class Auto extends LinearOpMode
 
     ArrayList<AutoFunction> autoSteps;
     AutoPaths paths;
+    boolean red;
 
     boolean backPressed=false;
     boolean saveConfig=false;
@@ -49,6 +50,8 @@ public class Auto extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
 
+        Hardware.currentOpMode=this;
+        Hardware robot = new Hardware(hardwareMap);
         //gets data and puts it onto separate lines
         int selection=0;
         String configName = "";
@@ -63,11 +66,17 @@ public class Auto extends LinearOpMode
         {
             errors+=e;
         }
-        paths = new AutoPaths(this);
+        paths = new AutoPaths(this,robot,false);
+
 
         //loads modifies and saves configs
         while(!isStarted())
         {
+
+            if(gamepad2.x)
+                paths.red=false;
+            else if(gamepad2.b)
+                paths.red=true;
             //makes back button save configs
             if(gamepad1.back)
             {
@@ -226,6 +235,7 @@ public class Auto extends LinearOpMode
             }
 
             telemetry.addLine(errors);
+            telemetry.addData("red",paths.red);
 
             telemetry.update();
 
@@ -282,22 +292,26 @@ public class Auto extends LinearOpMode
 
             telemetry.addLine(functionS);
             //calls functions
-            switch(functionS)
-            {
 
-                case "park":
-                    functions.add(paths.park);
-                    break;
-                default:
-                    functions.add(()->
-                    {
-                        ElapsedTime e = new ElapsedTime();
-                        while (opModeIsActive()&&e.seconds() < Double.parseDouble(functionS));
-                    });
+            if(functionS.equals( "park"))
+                functions.add(paths.park);
+            else if(functionS.contains( "duck spin"))
+                functions.add(paths.spinDuck);
+            else if (functionS.contains("park w"))
+                functions.add(paths.parkWarehouse);
+            else
+            {
+                functions.add(()->
+                {
+                    ElapsedTime e = new ElapsedTime();
+                    while (opModeIsActive()&&e.seconds() < Double.parseDouble(functionS));
+                });
 
             }
 
         }
+
+        telemetry.addData("red",red);
 
         telemetry.update();
 
