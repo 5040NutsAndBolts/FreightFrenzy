@@ -116,7 +116,7 @@ public class Hardware
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
         depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
 
-        /*BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
@@ -125,8 +125,8 @@ public class Hardware
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        currentOpMode.telemetry.addLine("imu init");*/
-        //while(!imu.isGyroCalibrated()&&!currentOpMode.isStopRequested());
+        currentOpMode.telemetry.addLine("imu init");
+        while(!imu.isGyroCalibrated()&&!currentOpMode.isStopRequested());
 
 
     }
@@ -275,7 +275,7 @@ public class Hardware
         double inchesForward = (inchesLF + inchesLB + inchesRF + inchesRB) / 4;
         double inchesSideways = (-inchesLF + inchesLB + inchesRF - inchesRB) / 4;
 
-        //theta=imu.getAngularOrientation().secondAngle;
+        theta=imu.getAngularOrientation().firstAngle;
         y+=inchesForward*Math.cos(theta)+inchesSideways*Math.sin(theta);
         x+=inchesForward*Math.sin(theta)+inchesSideways*Math.cos(theta);
 

@@ -203,7 +203,7 @@ public class Teleop extends LinearOpMode
             telemetry.addData("deposit level", robot.depositLevel);
             telemetry.addData("x",robot.x);
             telemetry.addData("y",robot.y);
-            //telemetry.addData("theta",robot.theta);
+            telemetry.addData("theta",robot.theta);
             telemetry.addData("time",e.seconds()-lastTime);
             lastTime=e.seconds();
             telemetry.update();
