@@ -33,7 +33,7 @@ public class Teleop extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
 
-        ThreadPool.renewPool();
+
         e=new ElapsedTime();
         e.startTime();
         double lastTime=0;

@@ -70,7 +70,7 @@ public class Hardware
 
     BNO055IMU imu;
 
-    private static final double inchesPerTick=11/1440;
+    private static final double inchesPerTick=11.0/1440.0;
 
     public Hardware(HardwareMap hardwareMap)
     {
@@ -107,6 +107,16 @@ public class Hardware
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         //Deposit
         depositSlide = hardwareMap.get(DcMotor.class, "Deposit Slide");
         depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -116,7 +126,7 @@ public class Hardware
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
         depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
 
-        /*BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
@@ -125,8 +135,8 @@ public class Hardware
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        currentOpMode.telemetry.addLine("imu init");*/
-        //while(!imu.isGyroCalibrated()&&!currentOpMode.isStopRequested());
+        currentOpMode.telemetry.addLine("imu init");
+        while(!imu.isGyroCalibrated()&&!currentOpMode.isStopRequested());
 
 
     }
@@ -146,55 +156,55 @@ public class Hardware
 
 
 
-        public void deposit()
-        {
+    public void deposit()
+    {
 
 
-              if(!depositOverride)
-              {
+          if(!depositOverride)
+          {
 
-                if ((depositLevel == 0)) {
-                    if (depositSlide.getCurrentPosition() < 190) {
-                        depositSlide.setPower(0);
+            if ((depositLevel == 0)) {
+                if (depositSlide.getCurrentPosition() < 190) {
+                    depositSlide.setPower(0);
+                    if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
+                        depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                } else {
+                    depositSlide.setTargetPosition(180);
+                    depositSlide.setPower(1);
+                }
+
+            } else if (depositLevel == 1)
+            {
+                if (depositSlide.getCurrentPosition() < 1330||depositSlide.getCurrentPosition() > 1350)
+                {
+                    depositSlide.setPower(1);
+                    depositSlide.setTargetPosition(1340);
+                    depositSlide.setTargetPosition(1340);
+                }
+                else
+                    {
+                    depositSlide.setPower(0);
                         if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
                             depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    } else {
-                        depositSlide.setTargetPosition(180);
-                        depositSlide.setPower(1);
-                    }
+                }
 
-                } else if (depositLevel == 1)
+            } else
+            {
+
+                if (depositSlide.getCurrentPosition() > 2980)
                 {
-                    if (depositSlide.getCurrentPosition() < 1330||depositSlide.getCurrentPosition() > 1350)
-                    {
-                        depositSlide.setPower(1);
-                        depositSlide.setTargetPosition(1340);
-                        depositSlide.setTargetPosition(1340);
-                    }
-                    else
-                        {
-                        depositSlide.setPower(0);
-                            if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
-                                depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    }
-
+                    depositSlide.setPower(0);
+                    if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
+                        depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 } else
                 {
-
-                    if (depositSlide.getCurrentPosition() > 2980)
-                    {
-                        depositSlide.setPower(0);
-                        if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
-                            depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    } else
-                    {
-                        depositSlide.setTargetPosition(2990);
-                        depositSlide.setPower(1);
-                    }
+                    depositSlide.setTargetPosition(2990);
+                    depositSlide.setPower(1);
                 }
-              }
-
             }
+          }
+
+        }
 
 
 
@@ -210,49 +220,59 @@ public class Hardware
     //lower level = 180, middle level = 1300
     boolean blue = true;
 
-        public void intake()
+    public void intake()
+    {
+
+
+        if(!intakeOverride)
         {
+            if ((intakeUp))
+            {
 
-
-                if(!intakeOverride)
+                if (colorsensor.blue() > 800 || colorsensor.getDistance(DistanceUnit.INCH) < 1 && !blue)
                 {
-                    if ((intakeUp))
-                    {
+                    intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-                        if (colorsensor.blue() > 800 || colorsensor.getDistance(DistanceUnit.INCH) < 1 && !blue)
-                        {
-                            intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-                            intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            blue = true;
-                            intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                            intakeArm.setPower(0);
-                        } else
-                        {
-                            intakeArm.setTargetPosition(-20);
-                            intakeArm.setPower(1);
-                        }
-
-                    } else
-                    {
-                        blue = false;
-                        if (intakeArm.getCurrentPosition() > 160)
-                        {
-                            intakeArm.setPower(0);
-                            if(intakeArm.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
-                                intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                        } else
-                        {
-                            intakeArm.setTargetPosition(165);
-                            intakeArm.setPower(1);
-                        }
-
-                    }
+                    intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    blue = true;
+                    intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    intakeArm.setPower(0);
+                } else
+                {
+                    intakeArm.setTargetPosition(-20);
+                    intakeArm.setPower(1);
                 }
 
-                
-            }
+            } else
+            {
+                blue = false;
+                if (intakeArm.getCurrentPosition() > 160)
+                {
+                    intakeArm.setPower(0);
+                    if(intakeArm.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
+                        intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                } else
+                {
+                    intakeArm.setTargetPosition(165);
+                    intakeArm.setPower(1);
+                }
 
+            }
+        }
+
+    }
+
+    public double forwardsTicks()
+    {
+
+        return ((double)(frontLeft.getCurrentPosition()+frontRight.getCurrentPosition()+backLeft.getCurrentPosition()+backRight.getCurrentPosition()))/4.0;
+
+    }
+
+    public double forwardsTicksStrafePos()
+    {
+        return ((double)(frontRight.getCurrentPosition()+backLeft.getCurrentPosition()))/2.0;
+    }
 
     public void updateInchesMoved()
     {
@@ -267,15 +287,17 @@ public class Hardware
 
         }
 
-        double inchesLF = getDeltaFrontLeftTicks()* inchesPerTick;
-        double inchesLB = getDeltaBackLeftTicks() * inchesPerTick;
-        double inchesRF = getDeltaFrontRightTicks() * inchesPerTick;
-        double inchesRB = getDeltaBackRightTicks() * inchesPerTick;
+        double inchesLF = inchesPerTick*(double)getDeltaFrontLeftTicks();
+        double inchesLB = inchesPerTick*(double)getDeltaBackLeftTicks();
+        double inchesRF = inchesPerTick*(double)getDeltaFrontRightTicks();
+        double inchesRB = inchesPerTick*(double)getDeltaBackRightTicks();
 
-        double inchesForward = (inchesLF + inchesLB + inchesRF + inchesRB) / 4;
-        double inchesSideways = (-inchesLF + inchesLB + inchesRF - inchesRB) / 4;
+        currentOpMode.telemetry.addData("delta",inchesLF);
 
-        //theta=imu.getAngularOrientation().secondAngle;
+        double inchesForward = (inchesLF + inchesLB + inchesRF + inchesRB) / 4.0;
+        double inchesSideways = (-inchesLF + inchesLB + inchesRF - inchesRB) / 4.0;
+
+        theta=imu.getAngularOrientation().firstAngle;
         y+=inchesForward*Math.cos(theta)+inchesSideways*Math.sin(theta);
         x+=inchesForward*Math.sin(theta)+inchesSideways*Math.cos(theta);
 
@@ -285,7 +307,7 @@ public class Hardware
 
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
     public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
-    public void openIntake() {intakeBlocker.setPosition(.25);}
+    public void openIntake() {intakeBlocker.setPosition(.27);}
     public void closeIntake(){intakeBlocker.setPosition(.45);}
 
     public int getDeltaFrontLeftTicks(){return frontLeftTicks-bulkData.getMotorCurrentPosition(frontLeft);}

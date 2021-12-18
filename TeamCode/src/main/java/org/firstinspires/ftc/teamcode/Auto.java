@@ -299,6 +299,12 @@ public class Auto extends LinearOpMode
                 functions.add(paths.spinDuck);
             else if (functionS.contains("park w"))
                 functions.add(paths.parkWarehouse);
+            else if(functionS.contains("intake"))
+                functions.add(paths.intake);
+            else if(functionS.contains("deposit"))
+                functions.add(paths.deposit);
+            else if(functionS.contains("returnFromDepo"))
+                functions.add(paths.returnFromDeposit);
             else
             {
                 functions.add(()->
