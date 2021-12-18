@@ -205,6 +205,16 @@ public class Auto extends LinearOpMode
                     {
                         splitData[selection]=(Double.parseDouble(splitData[selection])-.1)+"";
                     }
+                    else
+                    {
+                        for(int i = 1; i<paths.allPaths.size(); i++)
+                        {
+                            if(splitData[selection].contains(paths.allPaths.get(i).name))
+                            {
+                                splitData[selection]=paths.allPaths.get(i-1).name;
+                            }
+                        }
+                    }
                     data="";
                     for(String s:splitData)
                     {
@@ -219,6 +229,16 @@ public class Auto extends LinearOpMode
                     if(isNumeric(splitData[selection]))
                     {
                         splitData[selection]=(Double.parseDouble(splitData[selection])+.1)+"";
+                    }
+                    else
+                    {
+                        for(int i = 1; i<paths.allPaths.size()-1; i++)
+                        {
+                            if(splitData[selection].contains(paths.allPaths.get(i).name))
+                            {
+                                splitData[selection]=paths.allPaths.get(i+1).name;
+                            }
+                        }
                     }
                     data="";
                     for(String s:splitData)
@@ -287,30 +307,35 @@ public class Auto extends LinearOpMode
 
         ArrayList<AutoFunction> functions = new ArrayList<>();
 
-        for(String functionS:data)
+        for(String function:data)
         {
 
-            telemetry.addLine(functionS);
-            //calls functions
-
-            if(functionS.equals( "park"))
-                functions.add(paths.park);
-            else if(functionS.contains( "duck spin"))
-                functions.add(paths.spinDuck);
-            else if (functionS.contains("park w"))
-                functions.add(paths.parkWarehouse);
-            else if(functionS.contains("intake"))
-                functions.add(paths.intake);
-            else if(functionS.contains("deposit"))
-                functions.add(paths.deposit);
-            else if(functionS.contains("returnFromDepo"))
-                functions.add(paths.returnFromDeposit);
-            else
+            telemetry.addLine(function);
+            //checks input string against list of paths
+            boolean isPath=false;
+            for(AutoFunction funct:paths.allPaths)
             {
-                functions.add(()->
+
+                if(function.contains(funct.name))
                 {
-                    ElapsedTime e = new ElapsedTime();
-                    while (opModeIsActive()&&e.seconds() < Double.parseDouble(functionS));
+                    functions.add(funct);
+                    isPath=true;
+                    break;
+                }
+
+            }
+
+
+            if(!isPath)
+            {
+                functions.add(new AutoFunction()
+                {
+                    @Override
+                    void step()
+                    {
+                        ElapsedTime e = new ElapsedTime();
+                        while (opModeIsActive() && e.seconds() < Double.parseDouble(function)) ;
+                    }
                 });
 
             }

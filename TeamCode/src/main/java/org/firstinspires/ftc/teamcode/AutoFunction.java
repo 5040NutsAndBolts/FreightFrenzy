@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
-public interface AutoFunction
+public abstract class AutoFunction
 {
 
-    void step();
+    abstract void step();
+    String name="";
 
 }
