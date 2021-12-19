@@ -65,6 +65,8 @@ public class Auto extends LinearOpMode
         {
             data = new Scanner(new File(Environment.getExternalStorageDirectory() +"/"+ fileName)).useDelimiter("\\Z").next();
             splitData=data.split("\n");
+            for(int i = 0; i< splitData.length; i++)
+                splitData[i]=splitData[i].replaceAll("\n","").replaceAll("\r","");
         } catch (FileNotFoundException e)
         {
             errors+=e;
@@ -186,6 +188,8 @@ public class Auto extends LinearOpMode
                     {
                         data = new Scanner(new File(Environment.getExternalStorageDirectory() +"/"+ configName)).useDelimiter("\\Z").next();
                         splitData=data.split("\n");
+                        for(int i = 0; i< splitData.length; i++)
+                            splitData[i]=splitData[i].replaceAll("\n","").replaceAll("\r","");
                     } catch (FileNotFoundException e)
                     {
                         errors+=e;
@@ -250,7 +254,7 @@ public class Auto extends LinearOpMode
                     {
                         for(int i = 1; i<paths.allPaths.size(); i++)
                         {
-                            if(splitData[selection].equals(paths.allPaths.get(i).name.substring(1)))
+                            if(splitData[selection].equals(paths.allPaths.get(i).name))
                             {
                                 splitData[selection]=paths.allPaths.get(i-1).name;
                                 break;
@@ -281,7 +285,7 @@ public class Auto extends LinearOpMode
                     {
                         for(int i = 0; i<paths.allPaths.size()-1; i++)
                         {
-                            if(splitData[selection].equals(paths.allPaths.get(i).name.substring(1)))
+                            if(splitData[selection].equals(paths.allPaths.get(i).name))
                             {
                                 splitData[selection]=paths.allPaths.get(i+1).name;
                                 break;
@@ -374,7 +378,7 @@ public class Auto extends LinearOpMode
                 if(splitData.length < 17 )
                 {
                     for(int i = 0; i<splitData.length; i++)
-                        telemetry.addLine((i==selection?"*":"")+splitData[i]);
+                        telemetry.addLine((i==selection?"*":"")+splitData[i]+" "+splitData[i].length());
                 }
                 else
                 {
@@ -449,7 +453,7 @@ public class Auto extends LinearOpMode
             for(AutoFunction funct:paths.allPaths)
             {
 
-                if(function.equals(funct.name.substring(1)))
+                if(function.equals(funct.name))
                 {
                     functions.add(funct);
                     isPath=true;
