@@ -52,7 +52,7 @@ public class Auto extends LinearOpMode
 
         Hardware.currentOpMode=this;
         Hardware robot = new Hardware(hardwareMap);
-        //gets data and puts it onto separate lines
+        //gets data and separates it by line breaks
         int selection=0;
         String configName = "";
         String data="";
@@ -66,13 +66,16 @@ public class Auto extends LinearOpMode
         {
             errors+=e;
         }
+
+        //initialize the list of auto paths
         paths = new AutoPaths(this,robot,false);
 
 
-        //loads modifies and saves configs
+        //load, modify, and save configs using controller input during init period
         while(!isStarted())
         {
 
+            //is robot on redSide
             if(gamepad2.x)
                 paths.red=false;
             else if(gamepad2.b)
@@ -198,6 +201,7 @@ public class Auto extends LinearOpMode
                 else if(!gamepad1.dpad_down)
                     downPressed=false;
 
+                //cycle between functions and increment or decrement waits
                 if(gamepad1.dpad_left&&!leftPressed)
                 {
                     leftPressed=true;
@@ -212,6 +216,7 @@ public class Auto extends LinearOpMode
                             if(splitData[selection].contains(paths.allPaths.get(i).name))
                             {
                                 splitData[selection]=paths.allPaths.get(i-1).name;
+                                break;
                             }
                         }
                     }
@@ -232,11 +237,12 @@ public class Auto extends LinearOpMode
                     }
                     else
                     {
-                        for(int i = 1; i<paths.allPaths.size()-1; i++)
+                        for(int i = 0; i<paths.allPaths.size()-1; i++)
                         {
                             if(splitData[selection].contains(paths.allPaths.get(i).name))
                             {
                                 splitData[selection]=paths.allPaths.get(i+1).name;
+                                break;
                             }
                         }
                     }
@@ -248,7 +254,40 @@ public class Auto extends LinearOpMode
                 }
                 else if(!gamepad1.dpad_right)
                     rightPressed=false;
+                //add auto step to file
+                if(gamepad1.a&&!aPressed)
+                {
+                    aPressed=true;
+                    String[] oldData = splitData;
+                    splitData=new String[splitData.length+1];
+                    for(int i = 0; i<oldData.length; i++)
+                    {
+                        if(i<selection)
+                            splitData[i]=oldData[i];
+                        else
+                            splitData[i+1]=oldData[i];
+                    }
+                    splitData[selection]=paths.allPaths.get(0).name;
+                    data="";
+                    for(String s:splitData)
+                    {
+                        data+=s+"+\n";
+                    }
+                }
+                else if(!gamepad1.a)
+                {
+                    aPressed=false;
+                }
+                if(gamepad1.b&&!bPressed)
+                {
+                    bPressed=true;
+                }
+                else if(!gamepad1.b)
+                {
+                    bPressed=false;
+                }
 
+                //print auto functions in order
                 for(int i = 0; i<splitData.length; i++)
                     telemetry.addLine((i==selection?"*":"")+splitData[i]);
 
@@ -262,8 +301,10 @@ public class Auto extends LinearOpMode
         }
         waitForStart();
 
+        //turn each string in auto data into a function
         autoSteps = parseData(splitData);
 
+        //run each step of auto in order
         for(AutoFunction step:autoSteps)
         {
 
