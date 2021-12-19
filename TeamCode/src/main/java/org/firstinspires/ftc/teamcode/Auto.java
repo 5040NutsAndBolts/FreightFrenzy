@@ -92,7 +92,7 @@ public class Auto extends LinearOpMode
                 saveConfig = false;
                 loadConfig=false;
             }
-            if(gamepad1.left_trigger>.4)
+
             //makes right bumper load configs
             if(gamepad1.right_bumper)
             {
@@ -127,12 +127,21 @@ public class Auto extends LinearOpMode
                 if(gamepad1.y&&!yPressed)
                 {
                     yPressed=true;
-                    configName+="a";
+                    configName+="y";
                 }
                 else if(!gamepad1.y)
                     yPressed=false;
+                //delete characters
+                if(gamepad1.dpad_left&&!leftPressed)
+                {
+                    leftPressed=true;
+                    if(configName.length()>=1)
+                        configName=configName.substring(0,configName.length()-1);
+                }
+                else if(!gamepad1.dpad_left)
+                    leftPressed=false;
                 telemetry.addLine(configName);
-                if(gamepad1.right_bumper)
+                if(gamepad1.left_trigger>.4)
                     saveConfigToFile(configName,data);
             }
 
@@ -163,12 +172,12 @@ public class Auto extends LinearOpMode
                 if(gamepad1.y&&!yPressed)
                 {
                     yPressed=true;
-                    configName+="a";
+                    configName+="y";
                 }
                 else if(!gamepad1.y)
                     yPressed=false;
                 telemetry.addLine(configName);
-                if(gamepad1.right_bumper)
+                if(gamepad1.left_trigger>.4)
                 {
                     try
                     {
@@ -213,7 +222,7 @@ public class Auto extends LinearOpMode
                     {
                         for(int i = 1; i<paths.allPaths.size(); i++)
                         {
-                            if(splitData[selection].contains(paths.allPaths.get(i).name))
+                            if(splitData[selection].equals(paths.allPaths.get(i).name.substring(0,paths.allPaths.get(i).name.length()-1)))
                             {
                                 splitData[selection]=paths.allPaths.get(i-1).name;
                                 break;
@@ -223,7 +232,7 @@ public class Auto extends LinearOpMode
                     data="";
                     for(String s:splitData)
                     {
-                        data+=s+"+\n";
+                        data+=s+"\n";
                     }
                 }
                 else if(!gamepad1.dpad_left)
@@ -249,7 +258,7 @@ public class Auto extends LinearOpMode
                     data="";
                     for(String s:splitData)
                     {
-                        data+=s+"+\n";
+                        data+=s+"\n";
                     }
                 }
                 else if(!gamepad1.dpad_right)
@@ -271,7 +280,7 @@ public class Auto extends LinearOpMode
                     data="";
                     for(String s:splitData)
                     {
-                        data+=s+"+\n";
+                        data+=s+"\n";
                     }
                 }
                 else if(!gamepad1.a)
