@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,6 +30,8 @@ public class Auto extends LinearOpMode
     AutoPaths paths;
     boolean red;
 
+    int increment=1;
+
     boolean backPressed=false;
     boolean saveConfig=false;
     boolean loadConfig=false;
@@ -42,6 +43,8 @@ public class Auto extends LinearOpMode
     boolean downPressed=false;
     boolean leftPressed=false;
     boolean rightPressed=false;
+    boolean leftJoystickLeft=false;
+    boolean leftJoystickRight=false;
     String errors="";
 
 
@@ -195,11 +198,31 @@ public class Auto extends LinearOpMode
                 if(gamepad1.dpad_down&&!downPressed)
                 {
                     downPressed=true;
-                    if(selection<splitData.length-1)
+                    if(selection<splitData.length)
                         selection++;
                 }
                 else if(!gamepad1.dpad_down)
                     downPressed=false;
+
+
+                //changes increment amount
+                if(gamepad1.left_stick_x > .5&&!leftJoystickRight)
+                {
+                    leftJoystickRight = true;
+                    if(increment < 2)
+                      increment++;
+                }
+                else if(gamepad1.left_stick_x < .5)
+                    leftJoystickRight = false;
+
+                if(gamepad1.left_stick_x < -.5&&!leftJoystickLeft)
+                {
+                    leftJoystickLeft = true;
+                    if(increment > 0)
+                      increment--;
+                }
+                else if(gamepad1.left_stick_x > -.5)
+                    leftJoystickLeft = false;
 
                 //cycle between functions and increment or decrement waits
                 if(gamepad1.dpad_left&&!leftPressed)
@@ -207,7 +230,12 @@ public class Auto extends LinearOpMode
                     leftPressed=true;
                     if(isNumeric(splitData[selection]))
                     {
-                        splitData[selection]=(Double.parseDouble(splitData[selection])-.1)+"";
+                        if(increment==0)
+                            splitData[selection]=(Double.parseDouble(splitData[selection])-.01)+"";
+                        if(increment==1)
+                            splitData[selection]=(Double.parseDouble(splitData[selection])-.1)+"";
+                        if(increment==2)
+                            splitData[selection]=(Double.parseDouble(splitData[selection])-1)+"";
                     }
                     else
                     {
@@ -233,7 +261,12 @@ public class Auto extends LinearOpMode
                     rightPressed=true;
                     if(isNumeric(splitData[selection]))
                     {
-                        splitData[selection]=(Double.parseDouble(splitData[selection])+.1)+"";
+                        if(increment==0)
+                            splitData[selection]=(Double.parseDouble(splitData[selection])+.01)+"";
+                        if(increment==1)
+                            splitData[selection]=(Double.parseDouble(splitData[selection])+.1)+"";
+                        if(increment==2)
+                            splitData[selection]=(Double.parseDouble(splitData[selection])+1)+"";
                     }
                     else
                     {
@@ -278,19 +311,69 @@ public class Auto extends LinearOpMode
                 {
                     aPressed=false;
                 }
+
+                //deletes a step from auto
                 if(gamepad1.b&&!bPressed)
                 {
-                    bPressed=true;
+                   bPressed=true;
+                   String[] oldData = splitData;
+                   splitData=new String[splitData.length-1];
+                   for(int i = 0; i<oldData.length-1; i++)
+                   {
+                     if(i<selection)
+                         splitData[i] = oldData[i];
+                     else
+                         splitData[i] = oldData[i+1];
+                   }
+                   data="";
+                   for(String s:splitData)
+                   {
+                       data+=s+"+\n";
+                   }
                 }
                 else if(!gamepad1.b)
                 {
                     bPressed=false;
                 }
 
-                //print auto functions in order
-                for(int i = 0; i<splitData.length; i++)
-                    telemetry.addLine((i==selection?"*":"")+splitData[i]);
+                //adds wait
+                if(gamepad1.x&&!xPressed)
+                {
+                    xPressed=true;
+                    String[] oldData = splitData;
+                    splitData=new String[splitData.length+1];
+                    for(int i = 0; i<oldData.length; i++)
+                    {
+                        if(i<selection)
+                            splitData[i]=oldData[i];
+                        else
+                            splitData[i+1]=oldData[i];
+                    }
+                    splitData[selection]="1";
+                    data="";
+                    for(String s:splitData)
+                    {
+                        data+=s+"+\n";
+                    }
+                }
+                else if(!gamepad1.x)
+                {
+                    xPressed=false;
+                }
 
+                //print auto functions in order
+                if(splitData.length < 17 )
+                {
+                    for(int i = 0; i<splitData.length; i++)
+                        telemetry.addLine((i==selection?"*":"")+splitData[i]);
+                }
+                else
+                {
+                    for(int i = splitData.length-17; i< splitData.length; i++)
+                        telemetry.addLine((i==selection?"*":"")+splitData[i]);
+                }
+                if(selection==splitData.length)
+                    telemetry.addLine("*");
             }
 
             telemetry.addLine(errors);

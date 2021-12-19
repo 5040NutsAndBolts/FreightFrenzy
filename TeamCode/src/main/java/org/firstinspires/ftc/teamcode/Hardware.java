@@ -18,7 +18,6 @@ import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 import org.openftc.revextensions2.RevBulkData;
 
-import org.firstinspires.ftc.teamcode.helperclasses.ThreadPool;
 
 import static java.lang.Math.abs;
 
