@@ -250,7 +250,7 @@ public class Auto extends LinearOpMode
                     {
                         for(int i = 1; i<paths.allPaths.size(); i++)
                         {
-                            if(splitData[selection].equals(paths.allPaths.get(i).name.substring(0,paths.allPaths.get(i).name.length()-1)))
+                            if(splitData[selection].equals(paths.allPaths.get(i).name.substring(1)))
                             {
                                 splitData[selection]=paths.allPaths.get(i-1).name;
                                 break;
@@ -281,7 +281,7 @@ public class Auto extends LinearOpMode
                     {
                         for(int i = 0; i<paths.allPaths.size()-1; i++)
                         {
-                            if(splitData[selection].contains(paths.allPaths.get(i).name))
+                            if(splitData[selection].equals(paths.allPaths.get(i).name.substring(1)))
                             {
                                 splitData[selection]=paths.allPaths.get(i+1).name;
                                 break;
@@ -449,7 +449,7 @@ public class Auto extends LinearOpMode
             for(AutoFunction funct:paths.allPaths)
             {
 
-                if(function.contains(funct.name))
+                if(function.equals(funct.name.substring(1)))
                 {
                     functions.add(funct);
                     isPath=true;
