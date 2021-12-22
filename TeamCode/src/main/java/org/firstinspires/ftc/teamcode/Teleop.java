@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 
 import org.firstinspires.ftc.robotcore.external.navigation.TempUnit;
-import org.firstinspires.ftc.teamcode.helperclasses.ThreadPool;
+//import org.firstinspires.ftc.teamcode.helperclasses.ThreadPool;
 
 @TeleOp(name="Teleop",group="Teleop")
 public class Teleop extends LinearOpMode
@@ -79,13 +79,20 @@ public class Teleop extends LinearOpMode
             {
                 robot.depositOverride=true;
                 robot.depositSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.depositSlide.setPower(gamepad2.left_stick_y);
+                robot.depositSlide.setPower(gamepad2.right_stick_y);
             }
             else
             {
                 robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.depositOverride = false;
+
+                //capper
+                robot.setOutPower(gamepad2.right_stick_y);
             }
+
+            //capper
+            robot.setHorozontalPower(gamepad2.left_stick_x);
+            robot.setVerticalPower(gamepad2.left_stick_y);
 
             //intake override
             if(gamepad1.y)
