@@ -26,6 +26,8 @@ public class Teleop extends LinearOpMode
     boolean bumperPressed=false;
     boolean b1Pressed=false;
     boolean slowMode=false;
+    boolean b2pressed=false;
+    boolean leftDepositeRamp=true;
 
     ElapsedTime e;
 
@@ -112,11 +114,35 @@ public class Teleop extends LinearOpMode
 
             //Move freight into correct deposit side
             if(gamepad2.dpad_left)
-                robot.depositLeft();
+            {
+
+                leftDepositeRamp=true;
+                robot.depositLeft();}
             else if(gamepad2.dpad_right)
-                robot.depositRight();
+            {
+
+                leftDepositeRamp=false;
+                robot.depositRight();}
             else if(gamepad2.dpad_up)
                 robot.depositNeutral();
+
+            //when b is pressed will set one side of ramp open/closed
+            if(gamepad2.b && b2pressed)
+            {
+                b2pressed = true;
+                if(leftDepositeRamp)
+                {
+                    leftRampUp= !leftRampUp;
+                }
+
+            }else if(gamepad2.b && b2pressed){
+                b2pressed = false;
+                if(!leftDepositeRamp)
+                {
+                    rightRampUp= !rightRampUp;
+                }
+            }
+
 
             //Toggle left ramp when x is pressed
             if (!x2Pressed && gamepad2.x)
@@ -131,7 +157,7 @@ public class Teleop extends LinearOpMode
             else
                 robot.leftRampDown();
 
-            //Toggle right ramp when b is pressed
+            //Toggle right ramp when a is pressed
             if (!a2Pressed&&gamepad2.a) {
 
                 a2Pressed = true;
