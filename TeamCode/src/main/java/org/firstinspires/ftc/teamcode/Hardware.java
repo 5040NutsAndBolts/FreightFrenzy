@@ -51,6 +51,10 @@ public class Hardware
     public boolean depositOverride;
     public boolean intakeOverride;
 
+    private CRServo capperVertical;
+    private CRServo capperHorozontal;
+    private CRServo capperOut;
+
     public static LinearOpMode currentOpMode;
 
     private boolean intakeUp = true;
@@ -124,6 +128,11 @@ public class Hardware
         leftRamp = hardwareMap.get(Servo.class, "Left Ramp");
         rightRamp = hardwareMap.get(Servo.class, "Right Ramp");
         depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
+
+        //capper slides
+        capperVertical = hardwareMap.crservo.get("Capper Vertical");
+        capperHorozontal = hardwareMap.crservo.get("Capper Horozontal");
+        capperOut = hardwareMap.crservo.get("Capper Out");
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -215,6 +224,12 @@ public class Hardware
     public void setIntakePower(double power){intakeSweeper.setPower(power);}
     public void intakeArmUp() { intakeUp=true; }
     public void intakeArmDown() { intakeUp=false; }
+
+    //capper methods
+    public void setHorozontalPower(double power){capperHorozontal.setPower(power);}
+    public void setVerticalPower(double power){capperVertical.setPower(power);}
+    public void setOutPower(double power){capperOut.setPower(power);}
+
 
     //lower level = 180, middle level = 1300
     boolean blue = true;
