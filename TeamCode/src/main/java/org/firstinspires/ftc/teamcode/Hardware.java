@@ -38,10 +38,10 @@ public class Hardware
     private CRServo rightDuckSpinner;
 
     //drive train motors
-    private DcMotorEx frontLeft;
-    private DcMotorEx backLeft;
-    private DcMotorEx frontRight;
-    private DcMotorEx backRight;
+    public DcMotorEx frontLeft;
+    public DcMotorEx backLeft;
+    public DcMotorEx frontRight;
+    public DcMotorEx backRight;
 
     public DcMotor intakeArm;
     private CRServo intakeSweeper;
