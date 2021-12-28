@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.localization.ThreeTrackingWheelLocalizer;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -18,6 +21,10 @@ import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 import org.openftc.revextensions2.RevBulkData;
 
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static java.lang.Math.abs;
 
@@ -51,8 +58,8 @@ public class Hardware
     public boolean depositOverride;
     public boolean intakeOverride;
 
-    private CRServo capperVertical;
-    private CRServo capperHorozontal;
+    private Servo capperVertical;
+    private Servo capperHorozontal;
     private CRServo capperOut;
 
     public static LinearOpMode currentOpMode;
@@ -62,10 +69,7 @@ public class Hardware
     public RevBulkData bulkData;
     public ExpansionHubEx expansionHub;
 
-    private int frontLeftTicks;
-    private int backLeftTicks;
-    private int frontRightTicks;
-    private int backRightTicks;
+
 
     public double x=0;
     public double y=0;
@@ -73,12 +77,41 @@ public class Hardware
 
     BNO055IMU imu;
 
-    private static final double inchesPerTick=11.0/1440.0;
+
+    private static final double ODOM_TICKS_PER_IN = 1898.130719;
+
+    public static double trackwidth = 10.5107317;
+
+    public ExpansionHubMotor leftOdom, rightOdom, centerOdom;
+    // Real world distance traveled by the wheels
+    public double leftOdomTraveled, rightOdomTraveled, centerOdomTraveled;
+
+    // Odometry encoder positions
+    public int leftEncoderPos, centerEncoderPos, rightEncoderPos;
+
+    public ThreeTrackingWheelLocalizer odom = new ThreeTrackingWheelLocalizer(
+            new ArrayList<>(Arrays.asList(
+                    new Pose2d(3.99426605, 0, Math.PI / 2),
+                    new Pose2d(0, trackwidth/2, 0),
+                    new Pose2d(0, -trackwidth/2, 0)))) {
+        @Override
+        public List<Double> getWheelPositions() {
+            ArrayList<Double> wheelPositions = new ArrayList<>(3);
+            wheelPositions.add(centerOdomTraveled);
+            wheelPositions.add(leftOdomTraveled);
+            wheelPositions.add(rightOdomTraveled);
+            return wheelPositions;
+        }
+    };
+
 
     public Hardware(HardwareMap hardwareMap)
     {
 
         expansionHub = hardwareMap.get(ExpansionHubEx.class, "Control Hub");
+        leftOdom = (ExpansionHubMotor) hardwareMap.dcMotor.get("Front Left");
+        rightOdom = (ExpansionHubMotor) hardwareMap.dcMotor.get("Front Right");
+        centerOdom = (ExpansionHubMotor) hardwareMap.dcMotor.get("Back Left");
 
         //Intake
         intakeSweeper = hardwareMap.crservo.get("Intake Sweeper");
@@ -130,8 +163,8 @@ public class Hardware
         depositFlicker = hardwareMap.get(Servo.class, "Deposit Flicker");
 
         //capper slides
-        capperVertical = hardwareMap.crservo.get("Capper Vertical");
-        capperHorozontal = hardwareMap.crservo.get("Capper Horozontal");
+        capperVertical = hardwareMap.servo.get("Capper Vertical");
+        capperHorozontal = hardwareMap.servo.get("Capper Horozontal");
         capperOut = hardwareMap.crservo.get("Capper Out");
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -226,8 +259,8 @@ public class Hardware
     public void intakeArmDown() { intakeUp=false; }
 
     //capper methods
-    public void setHorozontalPower(double power){capperHorozontal.setPower(power);}
-    public void setVerticalPower(double power){capperVertical.setPower(power);}
+    public void setHorizontalPosition(double pos){capperHorozontal.setPosition(pos);}
+    public void setVerticalPosition(double pos){capperVertical.setPosition(pos);}
     public void setOutPower(double power){capperOut.setPower(power);}
 
 
@@ -288,9 +321,8 @@ public class Hardware
         return ((double)(frontRight.getCurrentPosition()+backLeft.getCurrentPosition()))/2.0;
     }
 
-    public void updateInchesMoved()
-    {
 
+    public void updatePositionRoadRunner() {
         try
         {
             bulkData = expansionHub.getBulkInputData();
@@ -301,41 +333,118 @@ public class Hardware
 
         }
 
-        double inchesLF = inchesPerTick*(double)getDeltaFrontLeftTicks();
-        double inchesLB = inchesPerTick*(double)getDeltaBackLeftTicks();
-        double inchesRF = inchesPerTick*(double)getDeltaFrontRightTicks();
-        double inchesRB = inchesPerTick*(double)getDeltaBackRightTicks();
+        // Change in the distance (centimeters) since the last update for each odometer
+        double deltaLeftDist = -(getDeltaLeftTicks()/ ODOM_TICKS_PER_IN );
+        double deltaRightDist = -(getDeltaRightTicks()/ ODOM_TICKS_PER_IN );
+        double deltaCenterDist = -getDeltaCenterTicks()/ ODOM_TICKS_PER_IN;
 
-        currentOpMode.telemetry.addData("delta",inchesLF);
+        leftOdomTraveled += deltaLeftDist;
+        rightOdomTraveled += deltaRightDist;
+        centerOdomTraveled += deltaCenterDist;
 
-        double inchesForward = (inchesLF + inchesLB + inchesRF + inchesRB) / 4.0;
-        double inchesSideways = (-inchesLF + inchesLB + inchesRF - inchesRB) / 4.0;
+        odom.update();
+        theta = odom.getPoseEstimate().component3();
+        x = -odom.getPoseEstimate().component1();
+        y = -odom.getPoseEstimate().component2();
 
-        theta=imu.getAngularOrientation().firstAngle;
-        y+=inchesForward*Math.cos(theta)+inchesSideways*Math.sin(theta);
-        x+=inchesForward*Math.sin(theta)+inchesSideways*Math.cos(theta);
 
-        resetDeltaTicks();
 
     }
+
+    /**
+     * Resets the delta on all odometry encoders back to 0
+     * */
+    private void resetDeltaTicks() {
+        leftEncoderPos = bulkData.getMotorCurrentPosition(leftOdom);
+        rightEncoderPos = bulkData.getMotorCurrentPosition(rightOdom);
+        centerEncoderPos = bulkData.getMotorCurrentPosition(centerOdom);
+    }
+
+    private int getDeltaLeftTicks() {
+        try
+        {
+            int total=bulkData.getMotorCurrentPosition(leftOdom);
+            int oldPos = leftEncoderPos;
+            leftEncoderPos=total;
+            return oldPos - total;
+        }catch(Exception e)
+        {
+
+            return 0;
+
+        }
+    }
+
+    private int getDeltaRightTicks() {
+        try
+        {
+            int total=bulkData.getMotorCurrentPosition(rightOdom);
+            int oldPos = rightEncoderPos;
+            rightEncoderPos=total;
+            return oldPos - total;
+        }catch(Exception e)
+        {
+
+            return 0;
+
+        }
+    }
+
+    private int getDeltaCenterTicks() {
+        try
+        {
+            int total=bulkData.getMotorCurrentPosition(centerOdom);
+            int oldPos = centerEncoderPos;
+            centerEncoderPos=total;
+            return oldPos - total;
+        }catch(Exception e)
+        {
+
+            return 0;
+
+        }
+    }
+
+    public void softBrake()
+    {
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+    }
+
+    /**
+     * Resets odometry position and values back to specific values
+     *
+     * @param x     X position to reset encoders to
+     * @param y     Y position to reset encoders to
+     * @param theta Rotational value to reset encoders to
+     */
+    public void resetOdometry(double x, double y, double theta) {
+        odom.setPoseEstimate(new Pose2d(-x, -y, theta));
+
+        leftOdomTraveled = 0;
+        rightOdomTraveled = 0;
+        leftOdomTraveled = 0;
+        leftEncoderPos = 0;
+
+        rightEncoderPos = 0;
+        centerEncoderPos = 0;
+
+        // Resets encoder values then sets them back to run without encoders because wheels and odometry are same pointer
+        leftOdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftOdom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightOdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightOdom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        centerOdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        centerOdom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
 
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
     public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
     public void openIntake() {intakeBlocker.setPosition(.27);}
     public void closeIntake(){intakeBlocker.setPosition(.45);}
-
-    public int getDeltaFrontLeftTicks(){return frontLeftTicks-bulkData.getMotorCurrentPosition(frontLeft);}
-    public int getDeltaFrontRightTicks(){return frontRightTicks-bulkData.getMotorCurrentPosition(frontRight);}
-    public int getDeltaBackLeftTicks(){return backLeftTicks-bulkData.getMotorCurrentPosition(backLeft);}
-    public int getDeltaBackRightTicks(){return backRightTicks-bulkData.getMotorCurrentPosition(backRight);}
-
-    public void resetDeltaTicks()
-    {
-        frontLeftTicks=bulkData.getMotorCurrentPosition(frontLeft);
-        frontRightTicks=bulkData.getMotorCurrentPosition(frontRight);
-        backLeftTicks=bulkData.getMotorCurrentPosition(backLeft);
-        backRightTicks=bulkData.getMotorCurrentPosition(backRight);
-    }
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {

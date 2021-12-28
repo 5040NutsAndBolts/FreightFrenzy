@@ -4,13 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
-
-import org.firstinspires.ftc.robotcore.external.navigation.TempUnit;
+import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
 //import org.firstinspires.ftc.teamcode.helperclasses.ThreadPool;
 
 @TeleOp(name="Teleop",group="Teleop")
@@ -18,6 +14,8 @@ public class Teleop extends LinearOpMode
 {
 
     boolean x2Pressed = false;
+    double horizontalPos=.5;
+    double verticalPos=.5;
     boolean a2Pressed = false;
     boolean a1Pressed = false;
     boolean rightRampUp = true;
@@ -57,7 +55,7 @@ public class Teleop extends LinearOpMode
         while (opModeIsActive())
         {
 
-            robot.updateInchesMoved();
+            robot.updatePositionRoadRunner();
 
             robot.intake();
             robot.deposit();
@@ -93,8 +91,10 @@ public class Teleop extends LinearOpMode
             }
 
             //capper
-            robot.setHorozontalPower(gamepad2.left_stick_x);
-            robot.setVerticalPower(gamepad2.left_stick_y);
+            robot.setHorizontalPosition(horizontalPos);
+            robot.setVerticalPosition(verticalPos);
+            horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad2.left_stick_x*(e.seconds()-lastTime),1);
+            verticalPos= HelperMethods.clamp(0,verticalPos -gamepad2.left_stick_y*(e.seconds()-lastTime),1);
 
             //intake override
             if(gamepad1.y)
@@ -236,6 +236,8 @@ public class Teleop extends LinearOpMode
             telemetry.addData("deposit level", robot.depositLevel);
             telemetry.addData("x",robot.x);
             telemetry.addData("y",robot.y);
+            telemetry.addData("horiz",horizontalPos);
+            telemetry.addData("vert",verticalPos);
             telemetry.addData("theta",robot.theta);
             telemetry.addData("time",e.seconds()-lastTime);
             lastTime=e.seconds();
