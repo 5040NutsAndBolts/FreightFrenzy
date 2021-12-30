@@ -95,9 +95,9 @@ public class remoteAuto extends LinearOpMode {
                 //barcode in the middle of storage unit and shared shipping hub
                 // move backwards to shipping hub
                 //puts freight on the second level
-                while(robot.y < 6) {
+                while(robot.y < 14) {
                     robot.drive(1, 0, 0);
-                    robot.depositLevel = 1;
+                    robot.depositLevel = 2;
                 }
 
                 //lift intake up to get to deposit
@@ -124,9 +124,9 @@ public class remoteAuto extends LinearOpMode {
                 //barcode to thr right of the shipping hub
                 // move backwards to shipping hub
                 //puts freight on the top level
-                while(robot.y < 6) {
+                while(robot.y < 22) {
                     robot.drive(1, 0, 0);
-                    robot.depositLevel = 1;
+                    robot.depositLevel = 3;
                 }
                 //lift intake up to get to deposit
                 robot.intakeArmUp();
