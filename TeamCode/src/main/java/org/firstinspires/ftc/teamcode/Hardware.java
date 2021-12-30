@@ -196,8 +196,6 @@ public class Hardware
     public int depositPosition(){return depositSlide.getCurrentPosition();}
 
 
-
-
     public void deposit()
     {
 
