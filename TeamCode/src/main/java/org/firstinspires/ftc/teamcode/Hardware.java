@@ -32,7 +32,7 @@ public class Hardware
 {
 
     //The linear slide motors
-    public DcMotor depositSlide;
+    public DcMotorEx depositSlide;
 
     private CRServo leftDuckSpinner;
     private CRServo rightDuckSpinner;
@@ -91,7 +91,7 @@ public class Hardware
 
     public ThreeTrackingWheelLocalizer odom = new ThreeTrackingWheelLocalizer(
             new ArrayList<>(Arrays.asList(
-                    new Pose2d(3.99426605, 0, Math.PI / 2),
+                    new Pose2d(5.06892985, 0, Math.PI / 2),
                     new Pose2d(0, trackwidth/2, 0),
                     new Pose2d(0, -trackwidth/2, 0)))) {
         @Override
@@ -154,7 +154,8 @@ public class Hardware
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //Deposit
-        depositSlide = hardwareMap.get(DcMotor.class, "Deposit Slide");
+        depositSlide = hardwareMap.get(DcMotorEx.class, "Deposit Slide");
+        depositSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         depositSlide.setTargetPosition(0);
         depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -164,7 +165,7 @@ public class Hardware
 
         //capper slides
         capperVertical = hardwareMap.servo.get("Capper Vertical");
-        capperHorozontal = hardwareMap.servo.get("Capper Horozontal");
+        capperHorozontal = hardwareMap.servo.get("Capper Horizontal");
         capperOut = hardwareMap.crservo.get("Capper Out");
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -189,8 +190,8 @@ public class Hardware
     public void rightRampDown(){rightRamp.setPosition(.7);}
 
     //Deposit flicker positions
-    public void depositLeft(){depositFlicker.setPosition(.25);}
-    public void depositRight(){depositFlicker.setPosition(.75);}
+    public void depositLeft(){depositFlicker.setPosition(0);}
+    public void depositRight(){depositFlicker.setPosition(1);}
     public void depositNeutral(){depositFlicker.setPosition(.5);}
     public int depositPosition(){return depositSlide.getCurrentPosition();}
 
@@ -205,41 +206,36 @@ public class Hardware
           {
 
             if ((depositLevel == 0)) {
-                if (depositSlide.getCurrentPosition() < 190) {
+                if (depositSlide.getCurrentPosition() < 6) {
                     depositSlide.setPower(0);
                     if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 } else {
-                    depositSlide.setTargetPosition(180);
+                    depositSlide.setTargetPosition(0);
                     depositSlide.setPower(1);
                 }
 
             } else if (depositLevel == 1)
             {
-                if (depositSlide.getCurrentPosition() < 1330||depositSlide.getCurrentPosition() > 1350)
+                if (depositSlide.getCurrentPosition() < 105||depositSlide.getCurrentPosition() > 115)
                 {
                     depositSlide.setPower(1);
-                    depositSlide.setTargetPosition(1340);
-                    depositSlide.setTargetPosition(1340);
+                    depositSlide.setTargetPosition(110);
                 }
                 else
                     {
-                    depositSlide.setPower(0);
-                        if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
-                            depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    depositSlide.setPower(.25);
                 }
 
             } else
             {
 
-                if (depositSlide.getCurrentPosition() > 2980)
+                if (depositSlide.getCurrentPosition() > 275)
                 {
-                    depositSlide.setPower(0);
-                    if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
-                        depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    depositSlide.setPower(.25);
                 } else
                 {
-                    depositSlide.setTargetPosition(2990);
+                    depositSlide.setTargetPosition(280);
                     depositSlide.setPower(1);
                 }
             }

@@ -120,11 +120,15 @@ public class LQR extends Application
         d[3]*=powerMultiply;
 
         double forward=d[0]+d[1]+d[2]+d[3];
-        double sideways=-d[0]-d[1]+d[2]+d[3];
-        double rotations=-d[0]+d[1]+d[2]-d[3];
+        double sideways=-d[0]+d[1]+d[2]-d[3];
+        double rotations=-d[0]+d[1]-d[2]+d[3];
+        Hardware.currentOpMode.telemetry.addLine(d[0]+" "+d[1]+" "+d[2]+" "+d[3]);
+
+        double forwardRobotOriented=forward*Math.cos(robot.theta)+sideways*Math.sin(robot.theta);
+        double sidewaysRobotOriented=-forward*Math.sin(robot.theta)+sideways*Math.cos(robot.theta);
 
         //run the motors
-        robot.drive(forward,sideways,rotations);
+        robot.drive(-forwardRobotOriented,sidewaysRobotOriented,-rotations);
 
     }
 
@@ -135,9 +139,10 @@ public class LQR extends Application
     public double[][] loadPath(String file) throws IOException, ClassNotFoundException
     {
 
+        Scanner s = new Scanner(new File(Environment.getExternalStorageDirectory() + file));
         //Gets LQR matrices file
-        String content = new Scanner(new File(Environment.getExternalStorageDirectory() + file)).useDelimiter("\\Z").next();
-
+        String content = s.useDelimiter("\\Z").next();
+        s.close();
         //split the file into individual matrices
         String data = content;
 

@@ -4,10 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
-//import org.firstinspires.ftc.teamcode.helperclasses.ThreadPool;
 
 @TeleOp(name="Teleop",group="Teleop")
 public class Teleop extends LinearOpMode
@@ -78,12 +78,14 @@ public class Teleop extends LinearOpMode
             if(gamepad2.y)
             {
                 robot.depositOverride=true;
-                robot.depositSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.depositSlide.setPower(gamepad2.right_stick_y);
+                if(!robot.depositSlide.getMode().equals(DcMotor.RunMode.RUN_WITHOUT_ENCODER))
+                    robot.depositSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                robot.depositSlide.setPower(Math.abs(gamepad2.right_stick_y-.05)>.05?-gamepad2.right_stick_y:.2);
             }
             else
             {
-                robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                if(!robot.depositSlide.getMode().equals(DcMotor.RunMode.RUN_TO_POSITION))
+                    robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.depositOverride = false;
 
                 //capper
@@ -228,7 +230,9 @@ public class Teleop extends LinearOpMode
 
 
 
+            PIDFCoefficients pid = robot.depositSlide.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
             telemetry.addData("Intake arm position",robot.intakeArmPosition());
+            telemetry.addData("pid",pid.p+" "+ pid.i+" "+ pid.d);
             telemetry.addData("Deposit position", robot.depositPosition());
             telemetry.addData("color",robot.colorsensor.red()+" "+robot.colorsensor.green()+" "+robot.colorsensor.blue()+" "+robot.colorsensor.alpha());
             telemetry.addData("Slow-mode", slowMode);
