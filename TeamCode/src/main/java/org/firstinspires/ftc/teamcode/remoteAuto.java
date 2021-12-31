@@ -42,11 +42,9 @@ public class remoteAuto extends LinearOpMode {
     {
         Hardware.currentOpMode=this;
         Hardware robot = new Hardware(hardwareMap);
-
+        robot.resetOdometry(0,0,90);
         waitForStart();
         //Open CV goes here to spit out 1, 2, or 3
-
-
         //moves robot to shipping hub
         while(robot.x < 30) {
             robot.drive(0, 1, 0);
@@ -149,6 +147,19 @@ public class remoteAuto extends LinearOpMode {
                 break;
 
         }
+
+        while(robot.x < 1 && robot.y < 1) {
+            robot.drive(0.5,1, 0);
+        }
+        robot.drive(0,0,0);
+
+        while(robot.y < 64) {
+            robot.drive(1, 0, 0);
+        }
+        robot.drive(0,0,0);
+
+
+
 
     }
 
