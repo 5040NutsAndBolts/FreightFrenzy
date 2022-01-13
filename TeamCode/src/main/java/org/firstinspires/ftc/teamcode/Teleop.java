@@ -80,7 +80,7 @@ public class Teleop extends LinearOpMode
                 robot.depositOverride=true;
                 if(!robot.depositSlide.getMode().equals(DcMotor.RunMode.RUN_WITHOUT_ENCODER))
                     robot.depositSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.depositSlide.setPower(Math.abs(gamepad2.right_stick_y-.05)>.05?-gamepad2.right_stick_y:.2);
+                robot.depositSlide.setPower(Math.abs(gamepad2.right_stick_y-.05)>.05?-gamepad2.right_stick_y:.12);
             }
             else
             {
@@ -176,9 +176,9 @@ public class Teleop extends LinearOpMode
 
             //Set intake power
             if(gamepad1.right_trigger>0)
-                robot.setIntakePower(-gamepad1.right_trigger);
+                robot.setIntakePower(gamepad1.right_trigger);
             else
-                robot.setIntakePower(gamepad1.left_trigger);
+                robot.setIntakePower(-gamepad1.left_trigger);
 
             if(gamepad1.b&&!b1Pressed)
             {
@@ -217,16 +217,18 @@ public class Teleop extends LinearOpMode
                 a1Pressed = false;
 
             if(intakeUp)
+            {
                 robot.intakeArmUp();
+                if(robot.intakeArmPosition()<30)
+                    robot.openIntake();
+            }
             else
             {
-                if(robot.intakeArmPosition()>30)
-                    robot.closeIntake();
+                robot.closeIntake();
                 robot.intakeArmDown();
             }
 
-            if(robot.intakeArmPosition()<30)
-                robot.openIntake();
+
 
 
 

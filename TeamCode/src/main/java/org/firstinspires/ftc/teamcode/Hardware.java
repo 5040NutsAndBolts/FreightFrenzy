@@ -193,7 +193,8 @@ public class Hardware
     //Deposit flicker positions
     public void depositLeft(){depositFlicker.setPosition(0);}
     public void depositRight(){depositFlicker.setPosition(1);}
-    public void depositNeutral(){depositFlicker.setPosition(.68);}
+    public void depositHalfRight(){depositFlicker.setPosition(.6);}
+    public void depositNeutral(){depositFlicker.setPosition(.5);}
     public int depositPosition(){return depositSlide.getCurrentPosition();}
 
 
@@ -264,7 +265,7 @@ public class Hardware
 
 
     //lower level = 180, middle level = 1300
-    boolean blue = true;
+    boolean resetEncoder = true;
 
     public void intake()
     {
@@ -275,12 +276,12 @@ public class Hardware
             if ((intakeUp))
             {
 
-                if (colorsensor.getDistance(DistanceUnit.INCH)<1.5)
+                if (colorsensor.getDistance(DistanceUnit.INCH)<1.5&&!resetEncoder)
                 {
                     intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
                     intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    blue = true;
+                    resetEncoder = true;
                     intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     intakeArm.setPower(0);
                 } else
@@ -291,15 +292,15 @@ public class Hardware
 
             } else
             {
-                blue = false;
-                if (intakeArm.getCurrentPosition() > 110)
+                resetEncoder = false;
+                if (intakeArm.getCurrentPosition() > 103)
                 {
                     intakeArm.setPower(0);
                     if(intakeArm.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
                         intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 } else
                 {
-                    intakeArm.setTargetPosition(114);
+                    intakeArm.setTargetPosition(107);
                     intakeArm.setPower(.9);
                 }
 
@@ -420,7 +421,7 @@ public class Hardware
      * @param theta Rotational value to reset encoders to
      */
     public void resetOdometry(double x, double y, double theta) {
-        odom.setPoseEstimate(new Pose2d(-x, -y, theta));
+        odom.setPoseEstimate(new Pose2d(x, y, theta));
 
         leftOdomTraveled = 0;
         rightOdomTraveled = 0;
@@ -443,6 +444,7 @@ public class Hardware
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
     public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
     public void openIntake() {intakeBlocker.setPosition(.36);}
+    public void intakeHalfWay(){intakeBlocker.setPosition(.31);}
     public void closeIntake(){intakeBlocker.setPosition(0);}
 
     //Set drive power
