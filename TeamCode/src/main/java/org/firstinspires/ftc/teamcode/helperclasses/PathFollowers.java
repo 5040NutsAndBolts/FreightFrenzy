@@ -73,15 +73,16 @@ public class PathFollowers
     public static void curveToFacePoint(Hardware robot, double proportionalRotateSpeed, double forwardSpeed, double angleToFace, Point point)
     {
 
-        double angleToPoint=robot.theta+Math.atan2(point.x-robot.x,point.y-robot.y)-angleToFace;
+        double angleToPoint=robot.theta+Math.atan2(point.x-robot.x,point.y-robot.y)-Math.PI-angleToFace;
         //angle difference
         while(angleToPoint<-Math.PI)
             angleToPoint=Math.PI*2+angleToPoint;
         while(angleToPoint>Math.PI)
             angleToPoint=Math.PI*2-angleToPoint;
-        double rotationSpeed=proportionalRotateSpeed*angleToPoint;
+        double rotationSpeed=-proportionalRotateSpeed*angleToPoint;
         robot.drive(forwardSpeed,0,rotationSpeed);
-        Hardware.currentOpMode.telemetry.addData("atan",Math.atan2(point.y-robot.y,point.x-robot.x));
+        Hardware.currentOpMode.telemetry.addData("atan",Math.atan2(point.x-robot.x,point.y-robot.y));
+        Hardware.currentOpMode.telemetry.addData("theta",robot.theta);
         Hardware.currentOpMode.telemetry.addData("angle",angleToPoint);
         Hardware.currentOpMode.telemetry.addData("forward",forwardSpeed);
         Hardware.currentOpMode.telemetry.addData("rotate",rotationSpeed);

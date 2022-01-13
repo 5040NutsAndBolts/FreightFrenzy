@@ -74,11 +74,11 @@ public class remoteAuto extends LinearOpMode {
 
 
         robot.setIntakePower(1);
-        while(robot.y > -13.75) {
+        while(robot.y > -14.5) {
             if(robot.y<-1)
                 robot.depositNeutral();
             robot.updatePositionRoadRunner();
-            PathFollowers.curveToFacePoint(robot,.6,-1,3*Math.PI/2,new Point(30,-32));
+            PathFollowers.curveToFacePoint(robot,2.1,-1,3*Math.PI/2,new Point(30.5,-34));
             //telemetry.addData("y",robot.y);
             //telemetry.update();
             robot.intake();
