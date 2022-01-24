@@ -52,15 +52,15 @@ public class remoteAuto extends LinearOpMode {
         robot.rightRampDown();
         robot.closeIntake();
 
-        while(robot.x < 17.5) {
+        while(robot.x < 17) {
             robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot, 0, 1, 3*Math.PI/2, .5, .1, .3,.45, new Point(0, 0));
+            PathFollowers.linearTolerancePathFollow(robot, 0, 1.1, 3*Math.PI/2, .5, .1, .3,.45, new Point(0, 0));
             if(robot.x>13)
             {
                 robot.intakeArmDown();
                 robot.intake();
             }
-            if(robot.x>9)
+            if(robot.x>9.75)
                 robot.depositRight();
 
 
@@ -73,48 +73,90 @@ public class remoteAuto extends LinearOpMode {
         //deployed intake and start brushes
 
 
-        robot.setIntakePower(1);
-        while(robot.y > -14.5) {
+        robot.setIntakePower(.875);
+        while(robot.y > -16) {
             if(robot.y<-1)
                 robot.depositNeutral();
             robot.updatePositionRoadRunner();
-            PathFollowers.curveToFacePoint(robot,2.1,-1,3*Math.PI/2,new Point(30.5,-34));
+            PathFollowers.curveToFacePoint(robot,6.2,-1,3*Math.PI/2,new Point(30,-34));
             //telemetry.addData("y",robot.y);
             //telemetry.update();
             robot.intake();
+            robot.reallyCloseIntake();
             robot.depositLevel = 0;
-            if(robot.y<-10.5)
+            if(robot.y<-11)
             {
                 robot.intakeArmUp();
                 robot.rightRampUp();
+
             }
+            if(robot.y<-13.5)
+                robot.setIntakePower(.78);
         }
-        while(robot.y < -4.25)
+        while(robot.y < -5.5)
         {
             robot.intake();
 
             if(robot.intakeArm.getCurrentPosition()<30)
-                robot.intakeHalfWay();
+                robot.openIntake();
 
-            if (robot.y > -8)
+            if (robot.y > -6.3)
             {
                 robot.rightRampDown();
-
-                robot.depositLevel=2;
                 robot.deposit();
                 robot.setIntakePower(0);
             }
-            if(robot.y>-6)
-                robot.depositRight();
+
             robot.updatePositionRoadRunner();
-            robot.drive(1, 0, HelperMethods.clamp(-1,robot.y/11.5+.61,0));
+            robot.drive(1, 0, HelperMethods.clamp(-1,-robot.y/20-.9,0));
         }
+        robot.depositLevel=2;
+
+
         ElapsedTime e = new ElapsedTime();
         e.startTime();
-        while(e.seconds()<2)
+        while(e.seconds()<.7)
         {
-            robot.drive(0, 0, 0);
             robot.deposit();
+            robot.drive(0, 0, 0);
+            if(e.seconds()>.4)
+                robot.depositRight();
+        }
+
+        while(opModeIsActive()&robot.x>1)
+        {
+
+            telemetry.addData("x",robot.x);
+            telemetry.addData("y",robot.y);
+            telemetry.update();
+            robot.updatePositionRoadRunner();
+            robot.drive(-.85,-1,0);
+
+        }
+        robot.depositLevel=0;
+        robot.intakeArmDown();
+        robot.closeIntake();
+        robot.setIntakePower(1);
+        robot.rightRampUp();
+        while(opModeIsActive()&&robot.y>-51)
+        {
+            telemetry.addData("x",robot.x);
+            telemetry.addData("y",robot.y);
+            telemetry.update();
+            robot.deposit();
+            robot.drive(-1, 0, 0);
+            robot.intake();
+            robot.updatePositionRoadRunner();
+        }
+        while(opModeIsActive()&&robot.y<-45)
+        {
+            robot.deposit();
+            PathFollowers.linearTolerancePathFollow(robot,.1,0,3*Math.PI/2,.3,.1,.05,.1,3*Math.PI/2,new Point(0,0));
+            robot.intake();
+            robot.updatePositionRoadRunner();
+            telemetry.addData("x",robot.x);
+            telemetry.addData("y",robot.y);
+            telemetry.update();
         }
 
         //move forward to pick up object

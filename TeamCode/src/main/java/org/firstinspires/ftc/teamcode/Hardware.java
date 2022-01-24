@@ -53,6 +53,10 @@ public class Hardware
     private Servo leftRamp;
     private Servo intakeBlocker;
 
+    private Servo leftOdomServo;
+    private Servo rightOdomServo;
+    private Servo centerOdomServo;
+
     public int depositLevel=0;
 
     public boolean depositOverride;
@@ -119,7 +123,7 @@ public class Hardware
         intakeBlocker = hardwareMap.servo.get("Intake Blocker");
         intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakeArm.setTargetPosition(0);
-        intakeArm.setPower(1);
+        intakeArm.setPower(0);
         intakeArm.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -169,6 +173,10 @@ public class Hardware
         capperHorozontal = hardwareMap.servo.get("Capper Horizontal");
         capperOut = hardwareMap.crservo.get("Capper Out");
 
+        leftOdomServo=hardwareMap.servo.get("Left Odom Servo");
+        rightOdomServo=hardwareMap.servo.get("Right Odom Servo");
+        centerOdomServo=hardwareMap.servo.get("Center Odom Servo");
+
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -181,6 +189,23 @@ public class Hardware
         currentOpMode.telemetry.addLine("imu init");
         while(!imu.isGyroCalibrated()&&!currentOpMode.isStopRequested());
 
+
+    }
+
+    public void odomDown()
+    {
+
+        leftOdomServo.setPosition(.492);
+        rightOdomServo.setPosition(.492);
+        centerOdomServo.setPosition(.492);
+
+    }
+    public void odomUp()
+    {
+
+        leftOdomServo.setPosition(0);
+        rightOdomServo.setPosition(0);
+        centerOdomServo.setPosition(0);
 
     }
 
@@ -443,9 +468,10 @@ public class Hardware
 
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
     public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
-    public void openIntake() {intakeBlocker.setPosition(.36);}
+    public void openIntake() {intakeBlocker.setPosition(.46);}
     public void intakeHalfWay(){intakeBlocker.setPosition(.31);}
-    public void closeIntake(){intakeBlocker.setPosition(0);}
+    public void closeIntake(){intakeBlocker.setPosition(0.305);}
+    public void reallyCloseIntake(){intakeBlocker.setPosition(0.295);}
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {

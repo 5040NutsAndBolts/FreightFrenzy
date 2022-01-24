@@ -194,6 +194,8 @@ public class Teleop extends LinearOpMode
             if(slowMode)
                 driveSpeed=.4;
 
+
+
             //Set drivetrain power
             robot.drive(gamepad1.left_stick_y*driveSpeed,gamepad1.left_stick_x*driveSpeed,gamepad1.right_stick_x*driveSpeed);
 
