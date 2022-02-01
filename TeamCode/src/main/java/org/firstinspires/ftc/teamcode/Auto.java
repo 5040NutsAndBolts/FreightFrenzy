@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.os.Environment;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 //end of test
 
+@Disabled
 @Autonomous(name="Auto",group="Auto")
 public class Auto extends LinearOpMode
 {

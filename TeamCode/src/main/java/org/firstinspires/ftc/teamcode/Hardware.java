@@ -84,7 +84,7 @@ public class Hardware
 
     private static final double ODOM_TICKS_PER_IN = 1898.130719;
 
-    public static double trackwidth = 10.5107317;
+    public static double trackwidth = 10.39701829;
 
     public ExpansionHubMotor leftOdom, rightOdom, centerOdom;
     // Real world distance traveled by the wheels
@@ -95,7 +95,7 @@ public class Hardware
 
     public ThreeTrackingWheelLocalizer odom = new ThreeTrackingWheelLocalizer(
             new ArrayList<>(Arrays.asList(
-                    new Pose2d(5.06892985, 0, Math.PI / 2),
+                    new Pose2d(5.685874282, 0, Math.PI / 2),
                     new Pose2d(0, trackwidth/2, 0),
                     new Pose2d(0, -trackwidth/2, 0)))) {
         @Override
@@ -192,7 +192,7 @@ public class Hardware
 
     }
 
-    public void odomDown()
+    /*public void odomDown()
     {
 
         leftOdomServo.setPosition(.492);
@@ -207,11 +207,11 @@ public class Hardware
         rightOdomServo.setPosition(0);
         centerOdomServo.setPosition(0);
 
-    }
+    }*/
 
     //Deposit ramp positions
     public void leftRampUp(){leftRamp.setPosition(0);}
-    public void leftRampDown(){leftRamp.setPosition(.4);}
+    public void leftRampDown(){leftRamp.setPosition(.34);}
     public void rightRampUp(){rightRamp.setPosition(1);}
     public void rightRampDown(){rightRamp.setPosition(.42);}
 
@@ -307,9 +307,13 @@ public class Hardware
 
                     intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     resetEncoder = true;
-                    intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+                } else if(resetEncoder)
+                {
+                    intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                     intakeArm.setPower(0);
-                } else
+                }
+                else
                 {
                     intakeArm.setTargetPosition(0);
                     intakeArm.setPower(1);
@@ -361,7 +365,7 @@ public class Hardware
         // Change in the distance (centimeters) since the last update for each odometer
         double deltaLeftDist = -(getDeltaLeftTicks()/ ODOM_TICKS_PER_IN );
         double deltaRightDist = -(getDeltaRightTicks()/ ODOM_TICKS_PER_IN );
-        double deltaCenterDist = -getDeltaCenterTicks()/ ODOM_TICKS_PER_IN;
+        double deltaCenterDist = getDeltaCenterTicks()/ ODOM_TICKS_PER_IN;
 
         leftOdomTraveled += deltaLeftDist;
         rightOdomTraveled += deltaRightDist;

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.demobots;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,6 +12,7 @@ import static java.lang.Math.abs;
 /**
  * Demo Omnibot code for showing off the omnibot
  */
+@Disabled
 @TeleOp(name = "Omnibot", group = "DemoBot")
 public class Omnibot extends OpMode {
 

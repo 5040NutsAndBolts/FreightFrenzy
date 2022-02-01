@@ -129,7 +129,7 @@ public class Teleop extends LinearOpMode
                 robot.depositNeutral();
 
             //when b is pressed will set one side of ramp open/closed
-            if(gamepad2.b && b2pressed)
+            if(gamepad2.b && b2pressed&&!gamepad2.start)
             {
                 b2pressed = true;
                 if(leftDepositeRamp)
@@ -200,18 +200,18 @@ public class Teleop extends LinearOpMode
             robot.drive(gamepad1.left_stick_y*driveSpeed,gamepad1.left_stick_x*driveSpeed,gamepad1.right_stick_x*driveSpeed);
 
             //Set duck spinner power
-            if(gamepad2.left_trigger>0)
+            if(gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_down)
             {
-                robot.setLeftDuckSpinnerPower(gamepad2.left_trigger);
-                robot.setRightDuckSpinnerPower(gamepad2.left_trigger);
+                robot.setLeftDuckSpinnerPower(-1);
+                robot.setRightDuckSpinnerPower(-1);
             }
             else{
-                robot.setRightDuckSpinnerPower(-gamepad2.right_trigger);
-                robot.setLeftDuckSpinnerPower(-gamepad2.right_trigger);
+                robot.setRightDuckSpinnerPower(0);
+                robot.setLeftDuckSpinnerPower(0);
             }
 
             //Toggle Intake Arm Up & Down when gamepad1.a is pressed
-            if (!a1Pressed && gamepad1.a)
+            if (!a1Pressed && gamepad1.a&&!gamepad1.start)
             {
                 a1Pressed = true;
                 intakeUp = !intakeUp;

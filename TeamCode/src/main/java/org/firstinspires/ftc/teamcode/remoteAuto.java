@@ -49,10 +49,9 @@ public class remoteAuto extends LinearOpMode {
         waitForStart();
         //Open CV goes here to spit out 1, 2, or 3
         //moves robot to shipping hub
-        robot.rightRampDown();
         robot.closeIntake();
 
-        while(robot.x < 17) {
+        while(robot.x < 14.5) {
             robot.updatePositionRoadRunner();
             PathFollowers.linearTolerancePathFollow(robot, 0, 1.1, 3*Math.PI/2, .5, .1, .3,.45, new Point(0, 0));
             if(robot.x>13)
@@ -60,9 +59,14 @@ public class remoteAuto extends LinearOpMode {
                 robot.intakeArmDown();
                 robot.intake();
             }
+            if(robot.x>3)
+                robot.rightRampDown();
             if(robot.x>9.75)
                 robot.depositRight();
-
+            Hardware.currentOpMode.telemetry.addData("x",robot.x);
+            Hardware.currentOpMode.telemetry.addData("y",robot.y);
+            Hardware.currentOpMode.telemetry.addData("theta",robot.theta);
+            Hardware.currentOpMode.telemetry.update();
 
         }
         robot.drive(0,0,0);
@@ -78,7 +82,7 @@ public class remoteAuto extends LinearOpMode {
             if(robot.y<-1)
                 robot.depositNeutral();
             robot.updatePositionRoadRunner();
-            PathFollowers.curveToFacePoint(robot,6.2,-1,3*Math.PI/2,new Point(30,-34));
+            PathFollowers.curveToFacePoint(robot,8.2,-1,3*Math.PI/2,new Point(25.5,-34));
             //telemetry.addData("y",robot.y);
             //telemetry.update();
             robot.intake();
@@ -108,7 +112,7 @@ public class remoteAuto extends LinearOpMode {
             }
 
             robot.updatePositionRoadRunner();
-            robot.drive(1, 0, HelperMethods.clamp(-1,-robot.y/20-.9,0));
+            robot.drive(1, 0, HelperMethods.clamp(-1,-robot.y/27-.1,0));
         }
         robot.depositLevel=2;
 
@@ -138,20 +142,22 @@ public class remoteAuto extends LinearOpMode {
         robot.closeIntake();
         robot.setIntakePower(1);
         robot.rightRampUp();
-        while(opModeIsActive()&&robot.y>-51)
+        while(opModeIsActive()&&robot.y>-40)
         {
             telemetry.addData("x",robot.x);
             telemetry.addData("y",robot.y);
             telemetry.update();
             robot.deposit();
-            robot.drive(-1, 0, 0);
+            PathFollowers.linearTolerancePathFollow(robot,-.4,0,3*Math.PI/2,.3,.05,0.2,.15,3*Math.PI/2,new Point(0,0));
             robot.intake();
             robot.updatePositionRoadRunner();
         }
-        while(opModeIsActive()&&robot.y<-45)
+        e.reset();
+        while(e.seconds()<.9){robot.drive(0,0,0);}
+        while(opModeIsActive()&&robot.y<-35)
         {
             robot.deposit();
-            PathFollowers.linearTolerancePathFollow(robot,.1,0,3*Math.PI/2,.3,.1,.05,.1,3*Math.PI/2,new Point(0,0));
+            PathFollowers.linearTolerancePathFollow(robot,.4,0,3*Math.PI/2,.3,.1,0.2,.1,3*Math.PI/2,new Point(0,0));
             robot.intake();
             robot.updatePositionRoadRunner();
             telemetry.addData("x",robot.x);
@@ -159,7 +165,7 @@ public class remoteAuto extends LinearOpMode {
             telemetry.update();
         }
 
-        //move forward to pick up object
+        //move forward to pick 0up object
 
         /*switch (openCVDetectionLevel) {
 

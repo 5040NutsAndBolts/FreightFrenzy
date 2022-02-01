@@ -73,18 +73,18 @@ public class PathFollowers
         double realRotation=0;
 
         //calculate distance to drive line
-        double lineConstant=-(fieldForwards* (start.y*Math.cos(zeroAngle)+start.x*Math.sin(angleTolerance))+fieldSideways*(start.x*Math.cos(zeroAngle)+start.y*Math.sin(angleTolerance)));
-        double distanceToLine=((robot.x*Math.cos(zeroAngle)+robot.y*Math.sin(angleTolerance))*fieldSideways+ (robot.x*Math.sin(zeroAngle)+robot.y*Math.cos(angleTolerance))*fieldForwards+lineConstant)/Math.sqrt(Math.pow(fieldForwards,2)+Math.pow(fieldSideways,2));
+        double lineConstant=-(fieldForwards* (start.y*Math.cos(zeroAngle)+start.x*Math.sin(zeroAngle))+fieldSideways*(start.x*Math.cos(zeroAngle)+start.y*Math.sin(zeroAngle)));
+        double distanceToLine=((robot.x*Math.cos(zeroAngle)+robot.y*Math.sin(zeroAngle))*fieldSideways+ (robot.x*Math.sin(zeroAngle)+robot.y*Math.cos(zeroAngle))*fieldForwards+lineConstant)/Math.sqrt(Math.pow(fieldForwards,2)+Math.pow(fieldSideways,2));
 
 
         //adjust drive is distance to line is out of tolerance
         if(Math.abs(distanceToLine)>perpendicularTolerance)
         {
             double normalizedVector = distanceToLine/Math.sqrt(Math.pow(forwards, 2) + Math.pow(sideways, 2));
-            double sidewaysToLineRobotOriented=forwards*normalizedVector;
-            double forwardsToLineRobotOriented=sideways*normalizedVector;
-            fieldForwards+=linearProportionalSpeed*(-sidewaysToLineRobotOriented*Math.sin(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.cos(robot.theta-zeroAngle));
-            fieldSideways+=linearProportionalSpeed*(-sidewaysToLineRobotOriented*Math.cos(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.sin(robot.theta-zeroAngle));
+            double sidewaysToLineRobotOriented=forwards*normalizedVector+sideways*normalizedVector;
+            double forwardsToLineRobotOriented=forwards*normalizedVector*Math.sin(zeroAngle)+sideways*normalizedVector*Math.cos(zeroAngle);;
+            fieldForwards+=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.sin(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.cos(robot.theta-zeroAngle));
+            fieldSideways+=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.cos(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.sin(robot.theta-zeroAngle));
         }
 
         double realForward;

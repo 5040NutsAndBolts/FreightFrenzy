@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.demobots;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Hardware;
 
+@Disabled
 @TeleOp(name = "OdomTest",group="teleop")
 public class OdomTest extends LinearOpMode
 {
