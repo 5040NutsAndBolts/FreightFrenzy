@@ -211,7 +211,7 @@ public class Hardware
 
     //Deposit ramp positions
     public void leftRampUp(){leftRamp.setPosition(0);}
-    public void leftRampDown(){leftRamp.setPosition(.34);}
+    public void leftRampDown(){leftRamp.setPosition(.38);}
     public void rightRampUp(){rightRamp.setPosition(1);}
     public void rightRampDown(){rightRamp.setPosition(.42);}
 
@@ -494,6 +494,24 @@ public class Hardware
         backLeft.setPower(forward - rotation + sideways);
         frontRight.setPower(forward + rotation + sideways);
         backRight.setPower(forward + rotation - sideways);
+    }
+
+    public void curveIntakeTowardsPoint(double x, double y, double theta, double pointX, double pointY)
+    {
+        double frontFace = Math.atan((pointX - x)/(pointY - y) + theta);
+        double clockwiseRotDif = frontFace - theta;
+        double counterRotDif = theta - frontFace;
+
+        if(clockwiseRotDif < 0)
+            clockwiseRotDif += 2 * Math.PI;
+        if(counterRotDif < 0)
+            counterRotDif += 2 * Math.PI;
+
+        if(clockwiseRotDif > counterRotDif)
+            drive(0, 0, -1 * counterRotDif / (2 * Math.PI));
+
+        if(counterRotDif > clockwiseRotDif)
+            drive(0,0, clockwiseRotDif / (2 * Math.PI));
     }
 
 }

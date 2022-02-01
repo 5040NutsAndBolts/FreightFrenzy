@@ -26,6 +26,7 @@ public class Teleop extends LinearOpMode
     boolean slowMode=false;
     boolean b2pressed=false;
     boolean leftDepositeRamp=true;
+    boolean linkedDeposit = true;
 
     ElapsedTime e;
 
@@ -92,6 +93,17 @@ public class Teleop extends LinearOpMode
                 robot.setOutPower(gamepad2.right_stick_y);
             }
 
+            //controls deposit toggle
+            if(gamepad2.b && !b2pressed && !gamepad2.start)
+            {
+                b2pressed = true;
+                linkedDeposit = !linkedDeposit;
+            }
+            else
+            {
+                b2pressed = false;
+            }
+
             //capper
             robot.setHorizontalPosition(horizontalPos);
             robot.setVerticalPosition(verticalPos);
@@ -114,71 +126,86 @@ public class Teleop extends LinearOpMode
                 robot.intakeOverride = false;
             }
 
-            //Move freight into correct deposit side
-            if(gamepad2.dpad_left)
-            {
+            //Move freight into correct deposit side when toggle is off
+            if(!linkedDeposit) {
+                if (gamepad2.dpad_left) {
 
-                leftDepositeRamp=true;
-                robot.depositLeft();}
-            else if(gamepad2.dpad_right)
-            {
+                    leftDepositeRamp = true;
+                    robot.depositLeft();
+                } else if (gamepad2.dpad_right) {
 
-                leftDepositeRamp=false;
-                robot.depositRight();}
-            else if(gamepad2.dpad_up)
-                robot.depositNeutral();
+                    leftDepositeRamp = false;
+                    robot.depositRight();
+                } else if (gamepad2.dpad_up)
+                    robot.depositNeutral();
+            }
 
-            //when b is pressed will set one side of ramp open/closed
-            if(gamepad2.b && b2pressed&&!gamepad2.start)
+            //linked deposit ramp controls
+            if(linkedDeposit)
             {
-                b2pressed = true;
-                if(leftDepositeRamp)
-                {
-                    leftRampUp= !leftRampUp;
+                if (gamepad2.dpad_left) {
+                    leftDepositeRamp = true;
+                    robot.depositLeft();
+                    leftRampUp = !leftRampUp;
                 }
-
-            }else if(gamepad2.b && b2pressed){
-                b2pressed = false;
-                if(!leftDepositeRamp)
-                {
-                    rightRampUp= !rightRampUp;
+                else if (gamepad2.dpad_right) {
+                    leftDepositeRamp = false;
+                    robot.depositRight();
+                    rightRampUp = !rightRampUp;
                 }
+                else if (gamepad2.dpad_up)
+                    robot.depositNeutral();
+                    if(!leftRampUp)
+                        leftRampUp = true;
+                    else  if(!rightRampUp)
+                        rightRampUp = true;
+
+                if (leftRampUp)
+                    robot.leftRampUp();
+                else
+                    robot.leftRampDown();
+
+                if (leftRampUp)
+                    robot.leftRampUp();
+                else
+                    robot.leftRampDown();
             }
 
 
-            //Toggle left ramp when x is pressed
-            if (!x2Pressed && gamepad2.x)
-            {
-                x2Pressed = true;
-                leftRampUp = !leftRampUp;
-            } else if (!gamepad2.x)
-                x2Pressed = false;
+            //unlinked ramp controls
+            if(!linkedDeposit) {
+                //Toggle left ramp when x is pressed
+                if (!x2Pressed && gamepad2.x) {
+                    x2Pressed = true;
+                    leftRampUp = !leftRampUp;
+                } else if (!gamepad2.x)
+                    x2Pressed = false;
 
-            if(leftRampUp)
-                robot.leftRampUp();
-            else
-                robot.leftRampDown();
+                if (leftRampUp)
+                    robot.leftRampUp();
+                else
+                    robot.leftRampDown();
 
-            //Toggle right ramp when a is pressed
-            if (!a2Pressed&&gamepad2.a) {
+                //Toggle right ramp when a is pressed
+                if (!a2Pressed && gamepad2.a) {
 
-                a2Pressed = true;
-                rightRampUp=!rightRampUp;
+                    a2Pressed = true;
+                    rightRampUp = !rightRampUp;
 
+                } else if (!gamepad2.a)
+                    a2Pressed = false;
+
+                if (rightRampUp)
+                    robot.rightRampUp();
+                else
+                    robot.rightRampDown();
             }
-            else if (!gamepad2.a)
-                a2Pressed = false;
-
-            if(rightRampUp)
-                robot.rightRampUp();
-            else
-                robot.rightRampDown();
 
             //Set intake power
             if(gamepad1.right_trigger>0)
                 robot.setIntakePower(gamepad1.right_trigger);
             else
-                robot.setIntakePower(-gamepad1.left_trigger);
+                robot.setIntakePower(-gamepad1.left_trigger * .5);
 
             if(gamepad1.b&&!b1Pressed)
             {
