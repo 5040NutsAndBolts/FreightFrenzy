@@ -22,12 +22,18 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.Hardware;
 import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
 import org.firstinspires.ftc.teamcode.helperclasses.LQR;
 import org.firstinspires.ftc.teamcode.helperclasses.PathFollowers;
 import org.firstinspires.ftc.teamcode.helperclasses.Point;
+import org.firstinspires.ftc.teamcode.helperclasses.TSEFinder;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.io.File;
 import java.util.List;
@@ -42,16 +48,47 @@ public class remoteAuto extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException
     {
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+
+        webcam.setPipeline(new TSEFinder());
+        webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            { webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT); }
+
+            @Override
+            public void onError(int errorCode) { }
+        });
+
+        int auto=1;
+
+
         Hardware.currentOpMode=this;
         Hardware robot = new Hardware(hardwareMap);
         robot.depositNeutral();
         robot.resetOdometry(0,0,3*Math.PI/2);
+        while(!isStopRequested()&!isStarted())
+        {
+
+            if(TSEFinder.screenPosition.x < 100)
+                auto = 1;
+            else if(TSEFinder.screenPosition.x > 100 && TSEFinder.screenPosition.x < 200)
+                auto = 2;
+            else
+                auto = 3;
+
+        }
         waitForStart();
         //Open CV goes here to spit out 1, 2, or 3
         //moves robot to shipping hub
         robot.closeIntake();
 
         while(robot.x < 14.5) {
+            robot.depositLevel=auto-1;
+            robot.deposit();
             robot.updatePositionRoadRunner();
             PathFollowers.linearTolerancePathFollow(robot, 0, 1.1, 3*Math.PI/2, .5, .1, .3,.45, new Point(0, 0));
             if(robot.x>13)
@@ -59,7 +96,7 @@ public class remoteAuto extends LinearOpMode {
                 robot.intakeArmDown();
                 robot.intake();
             }
-            if(robot.x>3)
+            if(robot.x>9.75)
                 robot.rightRampDown();
             if(robot.x>9.75)
                 robot.depositRight();
@@ -88,6 +125,7 @@ public class remoteAuto extends LinearOpMode {
             robot.intake();
             robot.reallyCloseIntake();
             robot.depositLevel = 0;
+            robot.deposit();
             if(robot.y<-11)
             {
                 robot.intakeArmUp();
@@ -97,6 +135,7 @@ public class remoteAuto extends LinearOpMode {
             if(robot.y<-13.5)
                 robot.setIntakePower(.78);
         }
+        //Drive to deposit to score duck
         while(robot.y < -5.5)
         {
             robot.intake();
@@ -112,7 +151,7 @@ public class remoteAuto extends LinearOpMode {
             }
 
             robot.updatePositionRoadRunner();
-            robot.drive(1, 0, HelperMethods.clamp(-1,-robot.y/27-.1,0));
+            robot.drive(1, 0, HelperMethods.clamp(-1,-robot.y/29-.2,0));
         }
         robot.depositLevel=2;
 
@@ -126,7 +165,7 @@ public class remoteAuto extends LinearOpMode {
             if(e.seconds()>.4)
                 robot.depositRight();
         }
-
+        //Drive back to wall
         while(opModeIsActive()&robot.x>1)
         {
 
@@ -134,7 +173,8 @@ public class remoteAuto extends LinearOpMode {
             telemetry.addData("y",robot.y);
             telemetry.update();
             robot.updatePositionRoadRunner();
-            robot.drive(-.85,-1,0);
+            PathFollowers.linearTolerancePathFollow(robot,-.8*.5,-1*.5,3*Math.PI/2,1.5,.05,0.2,.15,3*Math.PI/2,new Point(16,0));
+
 
         }
         robot.depositLevel=0;

@@ -210,9 +210,9 @@ public class Hardware
     }*/
 
     //Deposit ramp positions
-    public void leftRampUp(){leftRamp.setPosition(0);}
-    public void leftRampDown(){leftRamp.setPosition(.38);}
-    public void rightRampUp(){rightRamp.setPosition(1);}
+    public void leftRampUp(){leftRamp.setPosition(.1);}
+    public void leftRampDown(){leftRamp.setPosition(.4365);}
+    public void rightRampUp(){rightRamp.setPosition(.97);}
     public void rightRampDown(){rightRamp.setPosition(.42);}
 
     //Deposit flicker positions
