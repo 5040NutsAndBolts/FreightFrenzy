@@ -11,7 +11,6 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-@Disabled
 @Autonomous(name="TSE")
 public class TSEExample extends LinearOpMode
 {
@@ -66,10 +65,20 @@ public class TSEExample extends LinearOpMode
             }
         });
 
+        int TSEPosition = 1;
 
         waitForStart();
         while(opModeIsActive())
         {
+            if(TSEFinder.screenPosition.x < 100)
+                TSEPosition = 1;
+            else if(TSEFinder.screenPosition.x > 100 && TSEFinder.screenPosition.x < 200)
+                TSEPosition = 2;
+            else if(TSEFinder.screenPosition.x > 200)
+                TSEPosition = 3;
+
+            telemetry.addData("TSE position", TSEFinder.screenPosition);
+            telemetry.addData("barcode position", TSEPosition);
             telemetry.addData("Frame Count", webcam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
             telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());

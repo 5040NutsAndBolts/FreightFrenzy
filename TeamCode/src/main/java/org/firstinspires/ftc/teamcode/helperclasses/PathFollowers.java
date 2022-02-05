@@ -81,10 +81,10 @@ public class PathFollowers
         if(Math.abs(distanceToLine)>perpendicularTolerance)
         {
             double normalizedVector = distanceToLine/Math.sqrt(Math.pow(forwards, 2) + Math.pow(sideways, 2));
-            double sidewaysToLineRobotOriented=forwards*normalizedVector+sideways*normalizedVector;
-            double forwardsToLineRobotOriented=forwards*normalizedVector*Math.sin(zeroAngle)+sideways*normalizedVector*Math.cos(zeroAngle);;
-            fieldForwards+=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.sin(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.cos(robot.theta-zeroAngle));
-            fieldSideways+=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.cos(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.sin(robot.theta-zeroAngle));
+            double sidewaysToLineRobotOriented=Math.abs(forwards)*normalizedVector;
+            double forwardsToLineRobotOriented=sideways*normalizedVector;
+            fieldForwards-=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.sin(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.cos(robot.theta-zeroAngle));
+            fieldSideways-=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.cos(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.sin(robot.theta-zeroAngle));
         }
 
         double realForward;
