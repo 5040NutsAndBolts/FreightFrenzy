@@ -211,7 +211,7 @@ public class Hardware
 
     //Deposit ramp positions
     public void leftRampUp(){leftRamp.setPosition(.1);}
-    public void leftRampDown(){leftRamp.setPosition(.4365);}
+    public void leftRampDown(){leftRamp.setPosition(.431);}
     public void rightRampUp(){rightRamp.setPosition(.97);}
     public void rightRampDown(){rightRamp.setPosition(.42);}
 
@@ -242,10 +242,10 @@ public class Hardware
 
             } else if (depositLevel == 1)
             {
-                if (depositSlide.getCurrentPosition() < 475||depositSlide.getCurrentPosition() > 479)
+                if (depositSlide.getCurrentPosition() < 495||depositSlide.getCurrentPosition() > 499)
                 {
                     depositSlide.setPower(1);
-                    depositSlide.setTargetPosition(477);
+                    depositSlide.setTargetPosition(497);
                 }
                 else
                 {
@@ -475,7 +475,7 @@ public class Hardware
     public void openIntake() {intakeBlocker.setPosition(.46);}
     public void intakeHalfWay(){intakeBlocker.setPosition(.31);}
     public void closeIntake(){intakeBlocker.setPosition(0.305);}
-    public void reallyCloseIntake(){intakeBlocker.setPosition(0.295);}
+    public void reallyCloseIntake(){intakeBlocker.setPosition(0.3);}
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {
