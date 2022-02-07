@@ -52,7 +52,7 @@ public class PathFollowers
             realSideways=(fieldForwards*Math.sin(angle)+fieldSideways*Math.cos(angle));
         }
 
-        robot.drive(realForward,realSideways,realRotation);
+
 
     }
 
@@ -73,18 +73,18 @@ public class PathFollowers
         double realRotation=0;
 
         //calculate distance to drive line
-        double lineConstant=-(fieldForwards* (start.y*Math.cos(zeroAngle)+start.x*Math.sin(zeroAngle))+fieldSideways*(start.x*Math.cos(zeroAngle)+start.y*Math.sin(zeroAngle)));
-        double distanceToLine=((robot.x*Math.cos(zeroAngle)+robot.y*Math.sin(zeroAngle))*fieldSideways+ (robot.x*Math.sin(zeroAngle)+robot.y*Math.cos(zeroAngle))*fieldForwards+lineConstant)/Math.sqrt(Math.pow(fieldForwards,2)+Math.pow(fieldSideways,2));
+        double lineConstant=(fieldForwards* (start.y*Math.cos(zeroAngle)+start.x*Math.sin(zeroAngle))+fieldSideways*(start.x*Math.cos(zeroAngle)+start.y*Math.sin(zeroAngle)));
+        double distanceToLine=((robot.x*Math.cos(zeroAngle)+robot.y*Math.sin(zeroAngle))*fieldSideways- (robot.x*Math.sin(zeroAngle)+robot.y*Math.cos(zeroAngle))*fieldForwards+lineConstant)/Math.sqrt(Math.pow(fieldForwards,2)+Math.pow(fieldSideways,2));
 
 
         //adjust drive is distance to line is out of tolerance
         if(Math.abs(distanceToLine)>perpendicularTolerance)
         {
             double normalizedVector = distanceToLine/Math.sqrt(Math.pow(forwards, 2) + Math.pow(sideways, 2));
-            double sidewaysToLineRobotOriented=forwards*normalizedVector+sideways*normalizedVector;
-            double forwardsToLineRobotOriented=forwards*normalizedVector*Math.sin(zeroAngle)+sideways*normalizedVector*Math.cos(zeroAngle);;
+            double sidewaysToLineRobotOriented=forwards*normalizedVector;
+            double forwardsToLineRobotOriented=sideways*normalizedVector;
             fieldForwards+=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.sin(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.cos(robot.theta-zeroAngle));
-            fieldSideways+=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.cos(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.sin(robot.theta-zeroAngle));
+            fieldSideways-=linearProportionalSpeed*(sidewaysToLineRobotOriented*Math.cos(robot.theta-zeroAngle)+forwardsToLineRobotOriented*Math.sin(robot.theta-zeroAngle));
         }
 
         double realForward;
@@ -107,6 +107,13 @@ public class PathFollowers
         Hardware.currentOpMode.telemetry.addData("forwards",realForward+" "+fieldForwards);
         Hardware.currentOpMode.telemetry.addData("sideways",realSideways+" "+fieldSideways);
 
+        Hardware.currentOpMode.telemetry.addData("distance",distanceToLine);
+        Hardware.currentOpMode.telemetry.addData("x",robot.x);
+        Hardware.currentOpMode.telemetry.addData("y",robot.y);
+        Hardware.currentOpMode.telemetry.update();
+
+        robot.drive(realForward,realSideways,realRotation);
+
         robot.drive(realForward,realSideways,realRotation);
 
     }
@@ -125,7 +132,7 @@ public class PathFollowers
 
     }
 
-    public static void curveToFacePoint(Hardware robot, double proportionalRotateSpeed, double forwardSpeed, double angleToFace, Point point)
+    public static void curveToFacePoint(Hardware robot, PID pid, double forwardSpeed, double angleToFace, Point point)
     {
 
         double angleToPoint=robot.theta+Math.atan2(point.x-robot.x,point.y-robot.y)-Math.PI-angleToFace;
@@ -134,13 +141,13 @@ public class PathFollowers
             angleToPoint=Math.PI*2+angleToPoint;
         while(angleToPoint>Math.PI)
             angleToPoint=Math.PI*2-angleToPoint;
-        double rotationSpeed=-proportionalRotateSpeed*angleToPoint;
-        robot.drive(forwardSpeed,0,rotationSpeed);
+        pid.update(-angleToPoint);
+        robot.drive(forwardSpeed,0,pid.getPID());
         Hardware.currentOpMode.telemetry.addData("atan",Math.atan2(point.x-robot.x,point.y-robot.y));
         Hardware.currentOpMode.telemetry.addData("theta",robot.theta);
         Hardware.currentOpMode.telemetry.addData("angle",angleToPoint);
         Hardware.currentOpMode.telemetry.addData("forward",forwardSpeed);
-        Hardware.currentOpMode.telemetry.addData("rotate",rotationSpeed);
+        //Hardware.currentOpMode.telemetry.addData("rotate",rotationSpeed);
         Hardware.currentOpMode.telemetry.update();
 
     }

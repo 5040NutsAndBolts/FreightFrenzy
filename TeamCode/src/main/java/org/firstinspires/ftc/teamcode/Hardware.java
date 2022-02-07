@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
@@ -44,7 +45,7 @@ public class Hardware
     public DcMotorEx backRight;
 
     public DcMotor intakeArm;
-    private DcMotor intakeSweeper;
+    private DcMotorEx intakeSweeper;
     public RevColorSensorV3 colorsensor;
 
     //Deposit servo flicker and ramps
@@ -118,7 +119,7 @@ public class Hardware
         centerOdom = (ExpansionHubMotor) hardwareMap.dcMotor.get("Back Left");
 
         //Intake
-        intakeSweeper = hardwareMap.dcMotor.get("Intake Sweeper");
+        intakeSweeper = hardwareMap.get(DcMotorEx.class,"Intake Sweeper");
         intakeArm = hardwareMap.dcMotor.get("Intake Arm");
         intakeBlocker = hardwareMap.servo.get("Intake Blocker");
         intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -210,9 +211,9 @@ public class Hardware
     }*/
 
     //Deposit ramp positions
-    public void leftRampUp(){leftRamp.setPosition(0);}
-    public void leftRampDown(){leftRamp.setPosition(.35);}
-    public void rightRampUp(){rightRamp.setPosition(1);}
+    public void leftRampUp(){leftRamp.setPosition(.1);}
+    public void leftRampDown(){leftRamp.setPosition(.431);}
+    public void rightRampUp(){rightRamp.setPosition(.97);}
     public void rightRampDown(){rightRamp.setPosition(.42);}
 
     //Deposit flicker positions
@@ -242,10 +243,10 @@ public class Hardware
 
             } else if (depositLevel == 1)
             {
-                if (depositSlide.getCurrentPosition() < 475||depositSlide.getCurrentPosition() > 479)
+                if (depositSlide.getCurrentPosition() < 505||depositSlide.getCurrentPosition() > 509)
                 {
                     depositSlide.setPower(1);
-                    depositSlide.setTargetPosition(477);
+                    depositSlide.setTargetPosition(507);
                 }
                 else
                 {
@@ -497,22 +498,17 @@ public class Hardware
         backRight.setPower(forward + rotation - sideways);
     }
 
-    public void curveIntakeTowardsPoint(double x, double y, double theta, double pointX, double pointY)
+    public double intakeSeeperDraw()
     {
-        double frontFace = Math.atan((pointX - x)/(pointY - y) + theta);
-        double clockwiseRotDif = frontFace - theta;
-        double counterRotDif = theta - frontFace;
 
-        if(clockwiseRotDif < 0)
-            clockwiseRotDif += 2 * Math.PI;
-        if(counterRotDif < 0)
-            counterRotDif += 2 * Math.PI;
+        return intakeSweeper.getCurrent(CurrentUnit.AMPS);
 
-        if(clockwiseRotDif > counterRotDif)
-            drive(0, 0, -1 * counterRotDif / (2 * Math.PI));
-
-        if(counterRotDif > clockwiseRotDif)
-            drive(0,0, clockwiseRotDif / (2 * Math.PI));
     }
+
+    //public boolean intakeHasFreight()
+    //{
+
+        //return intakeSweeper.getCurrent(CurrentUnit.AMPS)
+    //}
 
 }
