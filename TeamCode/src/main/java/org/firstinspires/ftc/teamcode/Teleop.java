@@ -27,6 +27,7 @@ public class Teleop extends LinearOpMode
     boolean b2pressed=false;
     boolean leftDepositeRamp=true;
     boolean linkedDeposit = true;
+    boolean tseMode = false;
 
     ElapsedTime e;
 
@@ -60,6 +61,21 @@ public class Teleop extends LinearOpMode
 
             robot.intake();
             robot.deposit();
+
+            //Controller 1 TSE modes with left bumper being driving mode and right bumper to TSE mode
+            if (gamepad1.left_bumper&&bumperPressed)
+            {
+                tseMode = false;
+            }else if(gamepad1.right_bumper&&bumperPressed)
+            {
+
+                tseMode = true;
+            }
+
+
+
+
+
 
             //Slide outtake motor controller set up (linear slides)
             if(gamepad2.right_bumper&&!bumperPressed&&robot.depositLevel<2)
