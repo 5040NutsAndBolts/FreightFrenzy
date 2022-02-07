@@ -97,7 +97,7 @@ public class Teleop extends LinearOpMode
             robot.setHorizontalPosition(horizontalPos);
             robot.setVerticalPosition(verticalPos);
             horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad2.left_stick_x*(e.seconds()-lastTime)*.5,1);
-            verticalPos= HelperMethods.clamp(0,verticalPos -gamepad2.left_stick_y*(e.seconds()-lastTime)*.5,1);
+            verticalPos= HelperMethods.clamp(0,verticalPos+gamepad2.left_stick_y*(e.seconds()-lastTime)*.5,1);
 
             //intake override
             if(gamepad1.y)
@@ -257,6 +257,7 @@ public class Teleop extends LinearOpMode
 
             PIDFCoefficients pid = robot.depositSlide.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
             telemetry.addData("Intake arm position",robot.intakeArmPosition());
+            telemetry.addData("Intake Sweeper Current Draw",robot.intakeSeeperDraw());
             telemetry.addData("pid",pid.p+" "+ pid.i+" "+ pid.d);
             telemetry.addData("Deposit position", robot.depositPosition());
             telemetry.addData("color",robot.colorsensor.red()+" "+robot.colorsensor.green()+" "+robot.colorsensor.blue()+" "+robot.colorsensor.alpha());

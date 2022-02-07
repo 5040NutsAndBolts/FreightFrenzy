@@ -74,20 +74,25 @@ public class remoteAuto extends LinearOpMode {
         robot.resetOdometry(0, 0, 3 * Math.PI / 2);
         while (!isStopRequested() & !isStarted()) {
 
-            if (TSEFinder.screenPosition.x < 100)
+            if (TSEFinder.screenPosition.x < 115)
                 auto = 1;
-            else if (TSEFinder.screenPosition.x > 100 && TSEFinder.screenPosition.x < 200)
+            else if (TSEFinder.screenPosition.x < 215)
                 auto = 2;
             else
                 auto = 3;
 
+            telemetry.addData("auto",auto);
+            telemetry.update();
         }
         waitForStart();
         //Open CV goes here to spit out 1, 2, or 3
         //moves robot to shipping hub
         robot.closeIntake();
 
-        while (robot.x < 15.75) {
+        //moves the robot closer to hub in auto 3
+        double towardsHub=auto==3?1.75:0;
+
+        while (robot.x < 16.25+towardsHub) {
             robot.depositLevel = auto - 1;
             robot.deposit();
             robot.updatePositionRoadRunner();
@@ -99,7 +104,7 @@ public class remoteAuto extends LinearOpMode {
             }
             if (robot.x > 3)
                 robot.rightRampDown();
-            if (robot.x > 3.1)
+            if (robot.x > 3.1-(auto==2?1:0))
                 robot.depositRight();
             Hardware.currentOpMode.telemetry.addData("x", robot.x);
             Hardware.currentOpMode.telemetry.addData("y", robot.y);
@@ -112,18 +117,18 @@ public class remoteAuto extends LinearOpMode {
 
         //deployed intake and start brushes
 
-        if(auto==0)
+        if(auto==1)
         {}
-        else if(auto==1) {
+        else if(auto==2) {
             robot.setIntakePower(.68);
-            PID pid = new PID(3 * Math.PI / 2, .6, .03, .1);
+            PID pid = new PID(3 * Math.PI / 2, .75, .03, .15);
             while (robot.y > -16.5) {
                 if (robot.y < -1)
                     robot.depositNeutral();
                 robot.updatePositionRoadRunner();
 
 
-                PathFollowers.curveToFacePoint(robot, pid, -1, 3 * Math.PI / 2, new Point(35.5, -25));
+                PathFollowers.curveToFacePoint(robot, pid, -1, 3 * Math.PI / 2, new Point(29, -25));
 
                 telemetry.addData("y", robot.y);
                 telemetry.update();
@@ -154,20 +159,33 @@ public class remoteAuto extends LinearOpMode {
                 }
 
                 robot.updatePositionRoadRunner();
-                robot.drive(1, 0, HelperMethods.clamp(-1, -robot.y / 38 - .97, 0));
+                robot.drive(1, -.05, HelperMethods.clamp(-1, -robot.y / 55 - .41, 0));
             }
         }
         else
         {
+            ElapsedTime timer = new ElapsedTime();
+            timer.startTime();
+            while(timer.seconds()<.35)
+            {
+
+                if(timer.seconds()>.15)
+                {
+                    robot.drive(0, -.45, 0);
+                    robot.rightRampUp();
+                }
+                else
+                    robot.drive(0,0,0);
+
+            }
             robot.setIntakePower(.68);
-            PID pid = new PID(3 * Math.PI / 2, .7, .03, .05);
-            while (robot.y > -3.5) {
+            PID pid = new PID(3 * Math.PI / 2, .72, .03, .16);
+            while (robot.y > -4.25) {
                 if (robot.y < -1)
                     robot.depositNeutral();
                 robot.updatePositionRoadRunner();
 
-
-                PathFollowers.curveToFacePoint(robot, pid, -.4, 3 * Math.PI / 2, new Point(30.75, -14));
+                PathFollowers.curveToFacePoint(robot, pid, -.4, 3 * Math.PI / 2, new Point(29, -13));
 
                 telemetry.addData("y", robot.y);
                 telemetry.update();
@@ -176,30 +194,40 @@ public class remoteAuto extends LinearOpMode {
                 if (robot.y < -1)
                     robot.depositLevel = 0;
                 robot.deposit();
-                if (robot.y < -2) {
+                if (robot.y < -2.25) {
                     robot.intakeArmUp();
-                    robot.rightRampUp();
+
+                    if (robot.intakeArm.getCurrentPosition() < 30)
+                        robot.openIntake();
 
                 }
                 if (robot.y < -2)
-                    robot.setIntakePower(.65);
+                    robot.setIntakePower(.7);
+            }
+            timer.reset();
+            while(timer.seconds()<.5)
+            {
+                robot.intakeArmUp();
+                robot.intake();
+                if (robot.intakeArm.getCurrentPosition() < 30)
+                    robot.openIntake();
             }
             //Drive to deposit to score duck
             while (robot.y < -1) {
                 robot.intake();
-
                 if (robot.intakeArm.getCurrentPosition() < 30)
                     robot.openIntake();
 
-                if (robot.y > -6.3) {
+                if (robot.y > -1.5) {
                     robot.rightRampDown();
                     robot.deposit();
                     robot.setIntakePower(0);
                 }
 
                 robot.updatePositionRoadRunner();
-                robot.drive(1, 0, HelperMethods.clamp(-1, -robot.y / 40 - .45, 0));
+                robot.drive(1, 0, HelperMethods.clamp(-1, -robot.y / 40 - .9, 0));
             }
+
         }
         robot.depositLevel = 2;
 
@@ -221,31 +249,39 @@ public class remoteAuto extends LinearOpMode {
             telemetry.addData("y",robot.y);
             telemetry.update();
             robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot,-.75,-1,3*Math.PI/2,1.5,.05,0.2,.15,3*Math.PI/2,new Point(16,0));
+            PathFollowers.linearTolerancePathFollow(robot,-.75,-1,3*Math.PI/2,1.5,.04,0.2,.2,3*Math.PI/2,new Point(16,0));
 
 
         }
+
         robot.depositLevel=0;
         robot.intakeArmDown();
         robot.closeIntake();
         robot.setIntakePower(1);
         robot.rightRampUp();
-        while(opModeIsActive()&&robot.y>-50)
+        robot.depositNeutral();
+        ElapsedTime timer = new ElapsedTime();
+        timer.startTime();
+        boolean reset=false;
+        while(opModeIsActive()&&robot.y>-53&&(robot.intakeSeeperDraw()<3.5||timer.seconds()<.2))
         {
             telemetry.addData("x",robot.x);
             telemetry.addData("y",robot.y);
             telemetry.update();
+            if(e.seconds()>.1&&!reset)
+            {
+                robot.resetOdometry(1, robot.y, robot.theta);
+                reset=true;
+            }
             robot.deposit();
-            PathFollowers.linearTolerancePathFollow(robot,-1,0,3*Math.PI/2,.2,.025,0.2,.15,3*Math.PI/2,new Point(0,0));
+            PathFollowers.linearTolerancePathFollow(robot,robot.y<-32?-.1:-.75,0,3*Math.PI/2,.1,.025,0.4,.15,3*Math.PI/2,new Point(0,0));
             robot.intake();
             robot.updatePositionRoadRunner();
         }
-        e.reset();
-        while(e.seconds()<.2){robot.drive(0,0,0);}
         while(opModeIsActive()&&robot.y<-32)
         {
             robot.deposit();
-            PathFollowers.linearTolerancePathFollow(robot,1,0,3*Math.PI/2,.2,.025,0.2,.1,3*Math.PI/2,new Point(0,0));
+            PathFollowers.linearTolerancePathFollow(robot,1,0,3*Math.PI/2,.1,.025,0.4,.15,3*Math.PI/2,new Point(0,0));
             robot.intake();
             robot.updatePositionRoadRunner();
             telemetry.addData("x",robot.x);
