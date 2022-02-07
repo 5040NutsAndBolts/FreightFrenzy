@@ -211,7 +211,7 @@ public class Hardware
 
     //Deposit ramp positions
     public void leftRampUp(){leftRamp.setPosition(0);}
-    public void leftRampDown(){leftRamp.setPosition(.38);}
+    public void leftRampDown(){leftRamp.setPosition(.35);}
     public void rightRampUp(){rightRamp.setPosition(1);}
     public void rightRampDown(){rightRamp.setPosition(.42);}
 
@@ -472,10 +472,11 @@ public class Hardware
 
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
     public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
-    public void openIntake() {intakeBlocker.setPosition(.46);}
-    public void intakeHalfWay(){intakeBlocker.setPosition(.31);}
-    public void closeIntake(){intakeBlocker.setPosition(0.305);}
-    public void reallyCloseIntake(){intakeBlocker.setPosition(0.295);}
+    public void intakeStart() {intakeBlocker.setPosition(0);}
+    public void openIntake() {intakeBlocker.setPosition(.8);}
+    //public void intakeHalfWay(){intakeBlocker.setPosition(.31);}
+    public void closeIntake(){intakeBlocker.setPosition(0.7);}
+    public void reallyCloseIntake(){intakeBlocker.setPosition(0.75);}
 
     //Set drive power
     public void drive(double forward, double sideways, double rotation) {

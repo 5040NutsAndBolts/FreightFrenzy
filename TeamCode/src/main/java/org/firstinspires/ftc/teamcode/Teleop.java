@@ -254,7 +254,7 @@ public class Teleop extends LinearOpMode
             else
             {
                 robot.closeIntake();
-                robot.intakeArmDown();
+               robot.intakeArmDown();
             }
 
 
