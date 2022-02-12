@@ -4,6 +4,7 @@ import android.os.Environment;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -71,7 +72,7 @@ public class remoteAuto extends LinearOpMode {
         Hardware robot = new Hardware(hardwareMap);
 
         robot.depositNeutral();
-        robot.resetOdometry(0, 0, 3 * Math.PI / 2);
+        robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
         while (!isStopRequested() & !isStarted()) {
 
             if (TSEFinder.screenPosition.x < 115)
@@ -87,21 +88,39 @@ public class remoteAuto extends LinearOpMode {
         waitForStart();
         //Open CV goes here to spit out 1, 2, or 3
         //moves robot to shipping hub
-        robot.closeIntake();
 
+        robot.intakeArmUp();
+        robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //moves the robot closer to hub in auto 3
         double towardsHub=auto==3?1.75:0;
 
+        boolean setMode=true;
         while (robot.x < 16.25+towardsHub) {
-            robot.depositLevel = auto - 1;
-            robot.deposit();
-            robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot, 0, 1.1, 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
-
-            if (robot.x > 13) {
-                robot.intakeArmDown();
+            if(robot.x<12)
+            {
+                robot.depositLevel = auto==3?2:1;
+                if(robot.x>7)
+                {
+                    robot.closeIntake();
+                    if(setMode)
+                    {
+                        robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        setMode=false;
+                    }
+                }
+                else
+                    robot.intakeArm.setPower(-1);
+            }
+            else
+            {
+                robot.depositLevel = auto - 1;
                 robot.intake();
             }
+
+            robot.deposit();
+            robot.updatePositionRoadRunner();
+            PathFollowers.linearTolerancePathFollow(robot, -.025, 1.1, 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
+
             if (robot.x > 3)
                 robot.rightRampDown();
             if (robot.x > 3.1-(auto==2?1:0))
@@ -114,10 +133,118 @@ public class remoteAuto extends LinearOpMode {
         }
         robot.drive(0, 0, 0);
 
+        while(opModeIsActive()&robot.x>16)
+        {
+            PathFollowers.linearTolerancePathFollow(robot,-.65,-.6,3*Math.PI/2,1.5,.04,0.2,.2,3*Math.PI/2,new Point(16,0));
+            robot.updatePositionRoadRunner();
+        }
 
+        //Drive back to wall
+        while(opModeIsActive()&robot.x>1.5)
+        {
+
+            telemetry.addData("x",robot.x);
+            telemetry.addData("y",robot.y);
+            telemetry.addData("theta", robot.theta);
+            telemetry.update();
+            robot.updatePositionRoadRunner();
+            PathFollowers.linearTolerancePathFollow(robot,-.76,-1,3*Math.PI/2,1.5,.04,0.2,.2,3*Math.PI/2,new Point(16,0));
+
+
+        }
         //deployed intake and start brushes
+        robot.depositLevel=0;
+        robot.intakeArmDown();
+        robot.closeIntake();
+        robot.setIntakePower(1);
+        robot.rightRampUp();
+        robot.depositNeutral();
+        ElapsedTime timer = new ElapsedTime();
+        timer.startTime();
+        while(timer.seconds()<.1)
+        {
+            robot.drive(-.2,-.65,0);
+            robot.updatePositionRoadRunner();
+        }
+        robot.resetOdometry(0, robot.y, 3*Math.PI/2);
+        robot.updatePositionRoadRunner();
+        timer.reset();
+        boolean hitFreight=false;
+        while(opModeIsActive()&&robot.y>-68&&(robot.y>-43||robot.intakeSeeperDraw()<4||timer.seconds()<.05))
+        {
+            telemetry.addData("x",robot.x);
+            telemetry.addData("y",robot.y);
+            telemetry.addData("theta", robot.theta);
+            telemetry.addData("draw",robot.intakeSeeperDraw());
+            telemetry.addData("time",timer.seconds());
+            telemetry.update();
+            if(robot.intakeSeeperDraw()<3.8&&!hitFreight)
+            {
+                timer.reset();
+            }
+            else if(robot.intakeSeeperDraw()>=3.8)
+                hitFreight=true;
+            robot.deposit();
+            double speed=robot.y<-25?-.475:-.8;
+            if(hitFreight)
+                speed=.05;
+            robot.drive(speed,-.1,0);
+            robot.intake();
+            robot.updatePositionRoadRunnerOnlyRight();
+        }
+        robot.setIntakePower(.1);
+        while(opModeIsActive()&&robot.y<-30)
+        {
+            robot.deposit();
+            robot.drive(1, -.25, 0);
+            robot.intake();
+            robot.intakeArmUp();
+            if (robot.intakeArm.getCurrentPosition() < 30)
+                robot.openIntake();
+            robot.updatePositionRoadRunnerOnlyRight();
+            telemetry.addData("x", robot.x);
+            telemetry.addData("y", robot.y);
+            telemetry.addData("theta", robot.theta);
+            telemetry.update();
+        }
+        robot.resetDeltaTicks();
+        robot.updatePositionRoadRunner();
+        robot.resetOdometry(0,robot.y,3*Math.PI/2);
+        robot.updatePositionRoadRunner();
+        //Drive back to hub
+        while(opModeIsActive()&robot.x<21)
+        {
 
-        if(auto==1)
+            robot.intake();
+            if (robot.intakeArm.getCurrentPosition() < 30)
+                robot.openIntake();
+            telemetry.addData("x",robot.x);
+            telemetry.addData("y",robot.y);
+            telemetry.addData("theta", robot.theta);
+            telemetry.update();
+            if(robot.x>2.5)
+            {
+                robot.deposit();
+                robot.depositLevel = 2;
+            }
+            if(robot.x<4)
+                robot.updatePositionRoadRunnerRightAndCenter();
+            else
+                robot.updatePositionRoadRunner();
+            robot.drive(.54,1,0);
+            if(robot.x>12)
+            {
+                robot.depositRight();
+                robot.rightRampDown();
+            }
+
+        }
+        timer.reset();
+        while(timer.seconds()<1)
+            robot.drive(0,0,0);
+
+
+         /* if(auto==1)
         {}
         else if(auto==2) {
             robot.setIntakePower(.68);
@@ -241,174 +368,9 @@ public class remoteAuto extends LinearOpMode {
             if(e.seconds()>.4)
                 robot.depositRight();
         }
-        //Drive back to wall
-        while(opModeIsActive()&robot.x>1.5)
-        {
 
-            telemetry.addData("x",robot.x);
-            telemetry.addData("y",robot.y);
-            telemetry.update();
-            robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot,-.75,-1,3*Math.PI/2,1.5,.04,0.2,.2,3*Math.PI/2,new Point(16,0));
-
-
-        }
-
-        robot.depositLevel=0;
-        robot.intakeArmDown();
-        robot.closeIntake();
-        robot.setIntakePower(1);
-        robot.rightRampUp();
-        robot.depositNeutral();
-        ElapsedTime timer = new ElapsedTime();
-        timer.startTime();
-        boolean reset=false;
-        while(opModeIsActive()&&robot.y>-53&&(robot.intakeSeeperDraw()<3.5||timer.seconds()<.2))
-        {
-            telemetry.addData("x",robot.x);
-            telemetry.addData("y",robot.y);
-            telemetry.update();
-            if(e.seconds()>.1&&!reset)
-            {
-                robot.resetOdometry(1, robot.y, robot.theta);
-                reset=true;
-            }
-            robot.deposit();
-            PathFollowers.linearTolerancePathFollow(robot,robot.y<-32?-.1:-.75,0,3*Math.PI/2,.1,.025,0.4,.15,3*Math.PI/2,new Point(0,0));
-            robot.intake();
-            robot.updatePositionRoadRunner();
-        }
-        while(opModeIsActive()&&robot.y<-32)
-        {
-            robot.deposit();
-            PathFollowers.linearTolerancePathFollow(robot,1,0,3*Math.PI/2,.1,.025,0.4,.15,3*Math.PI/2,new Point(0,0));
-            robot.intake();
-            robot.updatePositionRoadRunner();
-            telemetry.addData("x",robot.x);
-            telemetry.addData("y",robot.y);
-            telemetry.update();
-        }
-
-        //move forward to pick 0up object
-
-        /*switch (openCVDetectionLevel) {
-
-            case 1:
-               //barcode closest to storage unit
-                //puts freight on the bottom level
-                while(robot.y > -3) {
-                    if(robot.y<-1)
-                        robot.depositNeutral();
-                    robot.updatePositionRoadRunner();
-                    robot.drive(-1, 0, 0);
-                    telemetry.addData("y",robot.y);
-                    telemetry.update();
-                    robot.depositLevel = 1;
-                }
-                //lift intake up to get to deposit
-                robot.intakeArmUp();
-
-                while(robot.y < 0) {
-                    robot.updatePositionRoadRunner();
-                    robot.drive(1, .1, 0);
-                    robot.deposit();
-                    robot.setIntakePower(0);
-                }
-                robot.rightRampDown();
-                robot.depositRight();
-
-
-                /*
-                ENTER TSC CODE GOES HERE
-                */
-
-                /*break;
-
-            case 2:
-                //barcode in the middle of storage unit and shared shipping hub
-                // move backwards to shipping hub
-                //puts freight on the second level
-                while(robot.y > -6) {
-                    if(robot.y>-1)
-                        robot.depositNeutral();
-                    robot.updatePositionRoadRunner();
-                    robot.drive(-1, 0, 0);
-                    robot.depositLevel = 2;
-                }
-
-                //lift intake up to get to deposit
-                robot.intakeArmUp();
-
-                while(robot.y < 0) {
-                    robot.updatePositionRoadRunner();
-                    robot.drive(1, .1, 0);
-                    robot.deposit();
-                    robot.setIntakePower(0);
-                }
-                robot.rightRampDown();
-                robot.depositRight();
-
-                /*
-                ENTER TSC CODE GOES HERE
-                */
-
-
-               /* break;
-
-            case 3:
-                //barcode to thr right of the shipping hub
-                // move backwards to shipping hub
-                //puts freight on the top level
-                while(robot.y > -14) {
-                    if(robot.y>-1)
-                        robot.depositNeutral();
-                    robot.updatePositionRoadRunner();
-                    robot.drive(-1, 0, 0);
-                    robot.depositLevel = 3;
-                }
-                //lift intake up to get to deposit
-                robot.intakeArmUp();
-
-                while(robot.y < 0) {
-                    robot.updatePositionRoadRunner();
-                    robot.drive(1, .1, 0);
-                    robot.deposit();
-                    robot.setIntakePower(0);
-                }
-                robot.rightRampDown();
-                robot.depositRight();
-
-
-                /*
-                ENTER TSC CODE GOES HERE
-                */
-
-
-                /*break;
-
-        }
-
-        while(robot.x > -1 && robot.y > -1) {
-            robot.updatePositionRoadRunner();
-            robot.drive(-0.5,1, 0);
-        }
-        robot.depositNeutral();
-        robot.rightRampUp();
-        robot.drive(0,0,0);
-
-        while(robot.y > -50) {
-            robot.updatePositionRoadRunner();
-            robot.drive(-1, 0, 0);
-        }
-        robot.drive(0,0,0);
         */
 
-
-
-
     }
-
-
-
 
 }

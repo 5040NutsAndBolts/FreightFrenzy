@@ -214,7 +214,7 @@ public class Hardware
     public void leftRampUp(){leftRamp.setPosition(.1);}
     public void leftRampDown(){leftRamp.setPosition(.431);}
     public void rightRampUp(){rightRamp.setPosition(.97);}
-    public void rightRampDown(){rightRamp.setPosition(.42);}
+    public void rightRampDown(){rightRamp.setPosition(.39);}
 
     //Deposit flicker positions
     public void depositLeft(){depositFlicker.setPosition(0);}
@@ -330,8 +330,9 @@ public class Hardware
                         intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 } else
                 {
-                    intakeArm.setTargetPosition(107);
-                    intakeArm.setPower(.9);
+                    intakeArm.setPower(0);
+                    if(intakeArm.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.FLOAT)
+                        intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                 }
 
             }
@@ -381,10 +382,68 @@ public class Hardware
 
     }
 
+    public void updatePositionRoadRunnerRightAndCenter() {
+        try
+        {
+            bulkData = expansionHub.getBulkInputData();
+        }catch(Exception e)
+        {
+
+            return;
+
+        }
+
+        // Change in the distance (centimeters) since the last update for each odometer
+        getDeltaLeftTicks();
+        double deltaRightDist = -(getDeltaRightTicks()/ ODOM_TICKS_PER_IN );
+        double deltaCenterDist = getDeltaCenterTicks()/ ODOM_TICKS_PER_IN;
+
+        leftOdomTraveled += deltaRightDist;
+        rightOdomTraveled += deltaRightDist;
+        centerOdomTraveled += deltaCenterDist;
+
+        odom.update();
+
+        x = -odom.getPoseEstimate().component1();
+        y = -odom.getPoseEstimate().component2();
+
+
+
+
+    }
+    public void updatePositionRoadRunnerOnlyRight() {
+        try
+        {
+            bulkData = expansionHub.getBulkInputData();
+        }catch(Exception e)
+        {
+
+            return;
+
+        }
+
+        // Change in the distance (centimeters) since the last update for each odometer
+        getDeltaLeftTicks();
+        double deltaRightDist = -(getDeltaRightTicks()/ ODOM_TICKS_PER_IN );
+        getDeltaCenterTicks();
+
+        leftOdomTraveled += deltaRightDist;
+        rightOdomTraveled += deltaRightDist;
+
+        odom.update();
+        theta = odom.getPoseEstimate().component3();
+        x = -odom.getPoseEstimate().component1();
+        y = -odom.getPoseEstimate().component2();
+
+
+
+
+    }
+
     /**
      * Resets the delta on all odometry encoders back to 0
      * */
-    private void resetDeltaTicks() {
+    public void resetDeltaTicks() {
         leftEncoderPos = bulkData.getMotorCurrentPosition(leftOdom);
         rightEncoderPos = bulkData.getMotorCurrentPosition(rightOdom);
         centerEncoderPos = bulkData.getMotorCurrentPosition(centerOdom);
@@ -451,7 +510,7 @@ public class Hardware
      * @param theta Rotational value to reset encoders to
      */
     public void resetOdometry(double x, double y, double theta) {
-        odom.setPoseEstimate(new Pose2d(x, y, theta));
+        odom.setPoseEstimate(new Pose2d(-x, -y, theta));
 
         leftOdomTraveled = 0;
         rightOdomTraveled = 0;
@@ -473,10 +532,10 @@ public class Hardware
 
     public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
     public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
-    public void intakeStart() {intakeBlocker.setPosition(0);}
-    public void openIntake() {intakeBlocker.setPosition(.8);}
+    public void intakeStart() {intakeBlocker.setPosition(0.1);}
+    public void openIntake() {intakeBlocker.setPosition(.75);}
     //public void intakeHalfWay(){intakeBlocker.setPosition(.31);}
-    public void closeIntake(){intakeBlocker.setPosition(0.7);}
+    public void closeIntake(){intakeBlocker.setPosition(0.49);}
     public void reallyCloseIntake(){intakeBlocker.setPosition(0.75);}
 
     //Set drive power

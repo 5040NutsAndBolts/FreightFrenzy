@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
 
 @TeleOp(name="Teleop",group="Teleop")
@@ -50,6 +51,8 @@ public class Teleop extends LinearOpMode
         robot.rightRampUp();
         robot.leftRampUp();
 
+        robot.intakeStart();
+
         Hardware.currentOpMode=this;
         //robot.startIntakeThread();
         //robot.activateDeposit();
@@ -59,14 +62,13 @@ public class Teleop extends LinearOpMode
 
             robot.updatePositionRoadRunner();
 
-            robot.intake();
             robot.deposit();
 
             //Controller 1 TSE modes with left bumper being driving mode and right bumper to TSE mode
-            if (gamepad1.left_bumper&&bumperPressed)
+            if (gamepad1.left_bumper)
             {
                 tseMode = false;
-            }else if(gamepad1.right_bumper&&bumperPressed)
+            }else if(gamepad1.right_bumper)
             {
 
                 tseMode = true;
@@ -105,30 +107,36 @@ public class Teleop extends LinearOpMode
                     robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.depositOverride = false;
 
-                //capper
-                robot.setOutPower(gamepad2.right_stick_y);
+
             }
 
             //capper
             robot.setHorizontalPosition(horizontalPos);
             robot.setVerticalPosition(verticalPos);
-            horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad2.left_stick_x*(e.seconds()-lastTime)*.5,1);
-            verticalPos= HelperMethods.clamp(0,verticalPos+gamepad2.left_stick_y*(e.seconds()-lastTime)*.5,1);
 
             //intake override
             if(gamepad1.y)
             {
                 robot.intakeArmUp();
                 robot.intakeOverride=true;
+
                 if( robot.intakeArm.getMode()!=DcMotor.RunMode.RUN_WITHOUT_ENCODER)
                     robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.intakeArm.setPower(-.5);
+                robot.intakeArm.setPower(-.75);
+                if(robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)
+                {
+                    robot.intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    robot.openIntake();
+                }
+                else
+                    robot.closeIntake();
             }
             else
             {
                 if(robot.intakeArm.getMode()!=DcMotor.RunMode.RUN_TO_POSITION)
                     robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.intakeOverride = false;
+                robot.intake();
             }
 
             //controls deposit toggle
@@ -232,12 +240,20 @@ public class Teleop extends LinearOpMode
                 driveSpeed=.4;
 
 
-
-            //Set drivetrain power
-            robot.drive(gamepad1.left_stick_y*driveSpeed,gamepad1.left_stick_x*driveSpeed,gamepad1.right_stick_x*driveSpeed);
-
+            if(!tseMode)
+            {
+                //Set drivetrain power
+                robot.drive(gamepad1.left_stick_y * driveSpeed, gamepad1.left_stick_x * driveSpeed, gamepad1.right_stick_x * driveSpeed);
+            }
+            else
+            {
+                //capper
+                robot.setOutPower(gamepad1.right_stick_y);
+                horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.5,1);
+                verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.5,1);
+            }
             //Set duck spinner power
-            if(gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_down)
+            if(gamepad2.right_trigger>.25)
             {
                 robot.setLeftDuckSpinnerPower(-1);
                 robot.setRightDuckSpinnerPower(-1);
@@ -272,10 +288,7 @@ public class Teleop extends LinearOpMode
 
 
             PIDFCoefficients pid = robot.depositSlide.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-            telemetry.addData("Intake arm position",robot.intakeArmPosition());
-            telemetry.addData("Intake Sweeper Current Draw",robot.intakeSeeperDraw());
-            telemetry.addData("pid",pid.p+" "+ pid.i+" "+ pid.d);
-            telemetry.addData("Deposit position", robot.depositPosition());
+            telemetry.addData("Linked Deposit",linkedDeposit);
             telemetry.addData("color",robot.colorsensor.red()+" "+robot.colorsensor.green()+" "+robot.colorsensor.blue()+" "+robot.colorsensor.alpha());
             telemetry.addData("Slow-mode", slowMode);
             telemetry.addData("override",robot.depositOverride);
@@ -285,7 +298,6 @@ public class Teleop extends LinearOpMode
             telemetry.addData("horiz",horizontalPos);
             telemetry.addData("vert",verticalPos);
             telemetry.addData("theta",robot.theta);
-            telemetry.addData("time",e.seconds()-lastTime);
             lastTime=e.seconds();
             telemetry.update();
 

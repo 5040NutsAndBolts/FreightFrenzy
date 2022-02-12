@@ -21,7 +21,7 @@ public class PathFollowers
         double realRotation=0;
 
         //calculate distance to drive line
-        double lineConstant=-(fieldForwards* start.y+fieldSideways*start.x);
+        double lineConstant=-(-fieldForwards* start.y+fieldSideways*start.x);
         double distanceToLine=(robot.x*fieldSideways+ robot.y*fieldForwards+lineConstant)/Math.sqrt(Math.pow(fieldForwards,2)+Math.pow(fieldSideways,2));
 
 
@@ -73,7 +73,7 @@ public class PathFollowers
         double realRotation=0;
 
         //calculate distance to drive line
-        double lineConstant=(fieldForwards* (start.y*Math.cos(zeroAngle)+start.x*Math.sin(zeroAngle))+fieldSideways*(start.x*Math.cos(zeroAngle)+start.y*Math.sin(zeroAngle)));
+        double lineConstant=(fieldForwards* (-start.y*Math.cos(zeroAngle)+start.x*Math.sin(zeroAngle))+fieldSideways*(start.x*Math.cos(zeroAngle)-start.y*Math.sin(zeroAngle)));
         double distanceToLine=((robot.x*Math.cos(zeroAngle)+robot.y*Math.sin(zeroAngle))*fieldSideways- (robot.x*Math.sin(zeroAngle)+robot.y*Math.cos(zeroAngle))*fieldForwards+lineConstant)/Math.sqrt(Math.pow(fieldForwards,2)+Math.pow(fieldSideways,2));
 
 
@@ -104,13 +104,8 @@ public class PathFollowers
             realSideways=(fieldForwards*Math.sin(angle-zeroAngle)+fieldSideways*Math.cos(angle-zeroAngle));
         }
 
-        Hardware.currentOpMode.telemetry.addData("forwards",realForward+" "+fieldForwards);
-        Hardware.currentOpMode.telemetry.addData("sideways",realSideways+" "+fieldSideways);
-
-        Hardware.currentOpMode.telemetry.addData("distance",distanceToLine);
-        Hardware.currentOpMode.telemetry.addData("x",robot.x);
-        Hardware.currentOpMode.telemetry.addData("y",robot.y);
-        Hardware.currentOpMode.telemetry.update();
+        //
+        // Hardware.currentOpMode.telemetry.update();
 
         robot.drive(realForward,realSideways,realRotation);
 
@@ -128,7 +123,7 @@ public class PathFollowers
         Hardware.currentOpMode.telemetry.addData("forward",forwardSpeed);
         Hardware.currentOpMode.telemetry.addData("sideways",sidewaysSpeed);
         Hardware.currentOpMode.telemetry.addData("rotate",rotationSpeed);
-        Hardware.currentOpMode.telemetry.update();
+        //Hardware.currentOpMode.telemetry.update();
 
     }
 
