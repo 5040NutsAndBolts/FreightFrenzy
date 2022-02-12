@@ -89,27 +89,27 @@ public class remoteAuto extends LinearOpMode {
         //Open CV goes here to spit out 1, 2, or 3
         //moves robot to shipping hub
 
-        robot.intakeArmUp();
-        robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+       // robot.intakeArmUp();
+        //robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //moves the robot closer to hub in auto 3
-        double towardsHub=auto==3?1.75:0;
+        double towardsHub=auto==3?3:0;
 
         boolean setMode=true;
-        while (robot.x < 16.25+towardsHub) {
+        while (robot.x < 17.5+towardsHub) {
             if(robot.x<12)
             {
                 robot.depositLevel = auto==3?2:1;
                 if(robot.x>7)
                 {
-                    robot.closeIntake();
+          //          robot.closeIntake();
                     if(setMode)
                     {
-                        robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //            robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         setMode=false;
                     }
                 }
-                else
-                    robot.intakeArm.setPower(-1);
+                //else
+              //      robot.intakeArm.setPower(-1);
             }
             else
             {
@@ -119,7 +119,7 @@ public class remoteAuto extends LinearOpMode {
 
             robot.deposit();
             robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot, -.025, 1.1, 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
+            PathFollowers.linearTolerancePathFollow(robot, -.025, 1.6-robot.x/16, 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
 
             if (robot.x > 3)
                 robot.rightRampDown();
@@ -132,69 +132,62 @@ public class remoteAuto extends LinearOpMode {
 
         }
         robot.drive(0, 0, 0);
-
-        while(opModeIsActive()&robot.x>16)
-        {
-            PathFollowers.linearTolerancePathFollow(robot,-.65,-.6,3*Math.PI/2,1.5,.04,0.2,.2,3*Math.PI/2,new Point(16,0));
+        while (opModeIsActive() & robot.x > 15.5) {
+            PathFollowers.linearTolerancePathFollow(robot, -.4, -.35, 3 * Math.PI / 2, 1.5, .04, 0.2, .2, 3 * Math.PI / 2, new Point(16, 0));
             robot.updatePositionRoadRunner();
         }
 
         //Drive back to wall
-        while(opModeIsActive()&robot.x>1.5)
-        {
+        while (opModeIsActive() & robot.x > 1.5) {
 
-            telemetry.addData("x",robot.x);
-            telemetry.addData("y",robot.y);
+            telemetry.addData("x", robot.x);
+            telemetry.addData("y", robot.y);
             telemetry.addData("theta", robot.theta);
             telemetry.update();
             robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot,-.76,-1,3*Math.PI/2,1.5,.04,0.2,.2,3*Math.PI/2,new Point(16,0));
+            PathFollowers.linearTolerancePathFollow(robot, -.76, -1, 3 * Math.PI / 2, 1.5, .04, 0.2, .2, 3 * Math.PI / 2, new Point(16, 0));
 
 
         }
         //deployed intake and start brushes
-        robot.depositLevel=0;
-        robot.intakeArmDown();
-        robot.closeIntake();
-        robot.setIntakePower(1);
+        robot.depositLevel = 0;
+        //robot.intakeArmDown();
+        //robot.closeIntake();
+       // robot.setIntakePower(1);
         robot.rightRampUp();
         robot.depositNeutral();
         ElapsedTime timer = new ElapsedTime();
         timer.startTime();
-        while(timer.seconds()<.1)
-        {
-            robot.drive(-.2,-.65,0);
+        while (timer.seconds() < .1) {
+            robot.drive(-.2, -.55, 0);
             robot.updatePositionRoadRunner();
         }
-        robot.resetOdometry(0, robot.y, 3*Math.PI/2);
+        robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
         robot.updatePositionRoadRunner();
         timer.reset();
-        boolean hitFreight=false;
-        while(opModeIsActive()&&robot.y>-68&&(robot.y>-43||robot.intakeSeeperDraw()<4||timer.seconds()<.05))
-        {
-            telemetry.addData("x",robot.x);
-            telemetry.addData("y",robot.y);
+        boolean hitFreight = false;
+        while (opModeIsActive() && robot.y > -51) {
+            telemetry.addData("x", robot.x);
+            telemetry.addData("y", robot.y);
             telemetry.addData("theta", robot.theta);
-            telemetry.addData("draw",robot.intakeSeeperDraw());
-            telemetry.addData("time",timer.seconds());
+            telemetry.addData("draw", robot.intakeSeeperDraw());
+            telemetry.addData("time", timer.seconds());
             telemetry.update();
-            if(robot.intakeSeeperDraw()<3.8&&!hitFreight)
-            {
+            if (robot.intakeSeeperDraw() < 3.8 && !hitFreight) {
                 timer.reset();
-            }
-            else if(robot.intakeSeeperDraw()>=3.8)
-                hitFreight=true;
+            } else if (robot.intakeSeeperDraw() >= 3.8)
+                hitFreight = true;
             robot.deposit();
-            double speed=robot.y<-25?-.475:-.8;
-            if(hitFreight)
-                speed=.05;
-            robot.drive(speed,-.1,0);
+            double speed = robot.y < -25 ? -.475 : -.8;
+            if (hitFreight)
+                speed = .05;
+            robot.drive(speed, -.1, 0);
             robot.intake();
             robot.updatePositionRoadRunnerOnlyRight();
         }
-        robot.setIntakePower(.1);
-        while(opModeIsActive()&&robot.y<-30)
-        {
+
+      //  robot.setIntakePower(.1);
+        while (opModeIsActive() && robot.y < -31.75) {
             robot.deposit();
             robot.drive(1, -.25, 0);
             robot.intake();
@@ -209,39 +202,139 @@ public class remoteAuto extends LinearOpMode {
         }
         robot.resetDeltaTicks();
         robot.updatePositionRoadRunner();
-        robot.resetOdometry(0,robot.y,3*Math.PI/2);
+        robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
         robot.updatePositionRoadRunner();
         //Drive back to hub
-        while(opModeIsActive()&robot.x<21)
-        {
+        while (opModeIsActive() & robot.x < 21) {
 
             robot.intake();
             if (robot.intakeArm.getCurrentPosition() < 30)
                 robot.openIntake();
-            telemetry.addData("x",robot.x);
-            telemetry.addData("y",robot.y);
+            telemetry.addData("x", robot.x);
+            telemetry.addData("y", robot.y);
             telemetry.addData("theta", robot.theta);
             telemetry.update();
-            if(robot.x>2.5)
-            {
+            if (robot.x > 2.5) {
                 robot.deposit();
                 robot.depositLevel = 2;
             }
-            if(robot.x<4)
+            if (robot.x < 4)
                 robot.updatePositionRoadRunnerRightAndCenter();
             else
                 robot.updatePositionRoadRunner();
-            robot.drive(.54,1,0);
-            if(robot.x>12)
-            {
+            robot.drive(.54, 1, 0);
+            if (robot.x > 12) {
                 robot.depositRight();
                 robot.rightRampDown();
             }
 
         }
-        timer.reset();
-        while(timer.seconds()<1)
-            robot.drive(0,0,0);
+        for(int i = 0; i<3; i++) {
+            while (opModeIsActive() & robot.x > 15.5) {
+                PathFollowers.linearTolerancePathFollow(robot, -.4, -.35, 3 * Math.PI / 2, 1.5, .04, 0.2, .2, 3 * Math.PI / 2, new Point(16, 0));
+                robot.updatePositionRoadRunner();
+            }
+
+            //Drive back to wall
+            while (opModeIsActive() & robot.x > 6.25) {
+
+                telemetry.addData("x", robot.x);
+                telemetry.addData("y", robot.y);
+                telemetry.addData("theta", robot.theta);
+                telemetry.update();
+                robot.updatePositionRoadRunner();
+                PathFollowers.linearTolerancePathFollow(robot, -.76, -1, 3 * Math.PI / 2, 1.5, .04, 0.2, .2, 3 * Math.PI / 2, new Point(20, -5));
+
+
+            }
+            //deployed intake and start brushes
+            robot.depositLevel = 0;
+            //robot.intakeArmDown();
+            //robot.closeIntake();
+        //    robot.setIntakePower(1);
+            robot.rightRampUp();
+            robot.depositNeutral();
+            timer = new ElapsedTime();
+            timer.startTime();
+            while (timer.seconds() < .25) {
+                robot.drive(-.2, -.55, 0);
+                robot.updatePositionRoadRunner();
+            }
+            robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
+            robot.updatePositionRoadRunner();
+            timer.reset();
+            hitFreight = false;
+            while (opModeIsActive() && robot.y > -60) {
+                telemetry.addData("x", robot.x);
+                telemetry.addData("y", robot.y);
+                telemetry.addData("theta", robot.theta);
+                telemetry.addData("draw", robot.intakeSeeperDraw());
+                telemetry.addData("time", timer.seconds());
+                telemetry.update();
+                if (robot.intakeSeeperDraw() < 3.8 && !hitFreight) {
+                    timer.reset();
+                } else if (robot.intakeSeeperDraw() >= 3.8)
+                    hitFreight = true;
+                robot.deposit();
+                double speed = robot.y < -25 ? -.475 : -.8;
+                if (hitFreight)
+                    speed = .05;
+                robot.drive(speed, -.1, 0);
+                robot.intake();
+                robot.updatePositionRoadRunnerOnlyRight();
+            }
+
+            robot.resetOdometry(0,-77.5+robot.distanceSensor.getVoltage()/6.25*2000,3*Math.PI/2);
+
+           // robot.setIntakePower(.1);
+            while (opModeIsActive() && robot.y < -31.5) {
+                robot.deposit();
+                robot.drive(1, -.25, 0);
+                robot.intake();
+                robot.intakeArmUp();
+                if (robot.intakeArm.getCurrentPosition() < 30)
+                    robot.openIntake();
+                robot.updatePositionRoadRunnerOnlyRight();
+                telemetry.addData("x", robot.x);
+                telemetry.addData("y", robot.y);
+                telemetry.addData("theta", robot.theta);
+                telemetry.update();
+            }
+            robot.resetDeltaTicks();
+            robot.updatePositionRoadRunner();
+            robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
+            robot.updatePositionRoadRunner();
+            //Drive back to hub
+            while (opModeIsActive() & robot.x < 21) {
+
+                robot.intake();
+                if (robot.intakeArm.getCurrentPosition() < 30)
+                    robot.openIntake();
+                telemetry.addData("x", robot.x);
+                telemetry.addData("y", robot.y);
+                telemetry.addData("theta", robot.theta);
+                telemetry.update();
+                if (robot.x > 2.5) {
+                    robot.deposit();
+                    robot.depositLevel = 2;
+                }
+                if (robot.x < 4)
+                    robot.updatePositionRoadRunnerRightAndCenter();
+                else
+                    robot.updatePositionRoadRunner();
+                robot.drive(.52, 1, 0);
+                if (robot.x > 12) {
+                    robot.depositRight();
+                    robot.rightRampDown();
+                }
+
+            }
+
+        }
+
+        //timer.reset();
+        //while(timer.seconds()<1)
+          //  robot.drive(0,0,0);
 
 
          /* if(auto==1)

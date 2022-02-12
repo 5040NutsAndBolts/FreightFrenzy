@@ -7,6 +7,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -66,6 +67,8 @@ public class Hardware
     private Servo capperVertical;
     private Servo capperHorozontal;
     private CRServo capperOut;
+
+    public AnalogInput distanceSensor;
 
     public static LinearOpMode currentOpMode;
 
@@ -177,6 +180,8 @@ public class Hardware
         leftOdomServo=hardwareMap.servo.get("Left Odom Servo");
         rightOdomServo=hardwareMap.servo.get("Right Odom Servo");
         centerOdomServo=hardwareMap.servo.get("Center Odom Servo");
+
+        distanceSensor = hardwareMap.get(AnalogInput.class, "Distance Sensor");
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
