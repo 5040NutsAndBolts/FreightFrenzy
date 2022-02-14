@@ -217,15 +217,15 @@ public class Hardware
 
     //Deposit ramp positions
     public void leftRampUp(){leftRamp.setPosition(.1);}
-    public void leftRampDown(){leftRamp.setPosition(.431);}
+    public void leftRampDown(){leftRamp.setPosition(.42);}
     public void rightRampUp(){rightRamp.setPosition(.97);}
     public void rightRampDown(){rightRamp.setPosition(.39);}
 
     //Deposit flicker positions
     public void depositLeft(){depositFlicker.setPosition(0);}
-    public void depositRight(){depositFlicker.setPosition(1);}
+    public void depositRight(){depositFlicker.setPosition(.95);}
     public void depositHalfRight(){depositFlicker.setPosition(.6);}
-    public void depositNeutral(){depositFlicker.setPosition(.5);}
+    public void depositNeutral(){depositFlicker.setPosition(.6);}
     public int depositPosition(){return depositSlide.getCurrentPosition();}
 
 
@@ -237,7 +237,7 @@ public class Hardware
         {
 
             if ((depositLevel == 0)) {
-                if (depositSlide.getCurrentPosition() < 20) {
+                if (depositSlide.getCurrentPosition() < 35) {
                     depositSlide.setPower(0);
                     if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.FLOAT)
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -263,14 +263,14 @@ public class Hardware
             } else
             {
 
-                if (depositSlide.getCurrentPosition() > 1440)
+                if (depositSlide.getCurrentPosition() > 1345)
                 {
                     depositSlide.setPower(0);
                     if(depositSlide.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
                         depositSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 } else
                 {
-                    depositSlide.setTargetPosition(1500);
+                    depositSlide.setTargetPosition(1400);
                     depositSlide.setPower(1);
                 }
             }
