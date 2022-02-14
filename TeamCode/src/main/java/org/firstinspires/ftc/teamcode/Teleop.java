@@ -99,7 +99,7 @@ public class Teleop extends LinearOpMode
                 robot.depositOverride=true;
                 if(!robot.depositSlide.getMode().equals(DcMotor.RunMode.RUN_WITHOUT_ENCODER))
                     robot.depositSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.depositSlide.setPower(Math.abs(gamepad2.right_stick_y-.05)>.05?-gamepad2.right_stick_y:.12);
+                robot.depositSlide.setPower(Math.abs(gamepad2.left_stick_y-.05)>.05?-gamepad2.left_stick_y:.12);
             }
             else
             {
@@ -111,7 +111,7 @@ public class Teleop extends LinearOpMode
             }
 
             //capper
-            robot.setHorizontalPosition(horizontalPos);
+            robot.setHorizontalPosition(1 - horizontalPos);
             robot.setVerticalPosition(verticalPos);
 
             //intake override
@@ -298,6 +298,7 @@ public class Teleop extends LinearOpMode
             telemetry.addData("horiz",horizontalPos);
             telemetry.addData("vert",verticalPos);
             telemetry.addData("theta",robot.theta);
+            telemetry.addData("voltage", robot.intakeSeeperDraw());
             lastTime=e.seconds();
             telemetry.update();
 
