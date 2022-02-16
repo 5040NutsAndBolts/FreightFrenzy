@@ -60,6 +60,11 @@ public class Teleop extends LinearOpMode
         while (opModeIsActive())
         {
 
+            if(gamepad2.left_trigger>.4)
+            {
+                robot.depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
             robot.updatePositionRoadRunner();
 
             robot.deposit();
@@ -73,11 +78,6 @@ public class Teleop extends LinearOpMode
 
                 tseMode = true;
             }
-
-
-
-
-
 
             //Slide outtake motor controller set up (linear slides)
             if(gamepad2.right_bumper&&!bumperPressed&&robot.depositLevel<2)
@@ -106,7 +106,6 @@ public class Teleop extends LinearOpMode
                 if(!robot.depositSlide.getMode().equals(DcMotor.RunMode.RUN_TO_POSITION))
                     robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.depositOverride = false;
-
 
             }
 
@@ -248,7 +247,7 @@ public class Teleop extends LinearOpMode
             else
             {
                 //capper
-                robot.setOutPower(gamepad1.right_stick_y);
+                robot.setOutPower(gamepad1.right_stick_y>0?gamepad1.right_stick_y:gamepad1.right_stick_y*.15);
                 horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.5,1);
                 verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.5,1);
             }

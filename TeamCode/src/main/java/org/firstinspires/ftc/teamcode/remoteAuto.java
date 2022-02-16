@@ -65,11 +65,13 @@ public class remoteAuto extends LinearOpMode {
             }
         });
 
-        int auto = 1;
+        int auto = 3;
 
 
         Hardware.currentOpMode = this;
         Hardware robot = new Hardware(hardwareMap);
+
+        robot.resetStaticMotors();
 
         robot.depositNeutral();
         robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
@@ -94,10 +96,10 @@ public class remoteAuto extends LinearOpMode {
         robot.intakeArmUp();
         robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //moves the robot closer to hub in auto 3
-        double towardsHub=auto==2?2:0;
+        double towardsHub=auto==3?.85:0;
 
         boolean setMode=true;
-        while (robot.x < 17.5+towardsHub) {
+        while (robot.x < 19+towardsHub) {
             if(robot.x<12)
             {
                 robot.depositLevel = auto==3?2:1;
@@ -121,11 +123,11 @@ public class remoteAuto extends LinearOpMode {
 
             robot.deposit();
             robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot, -.025, 1.6-robot.x/16, 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
+            PathFollowers.linearTolerancePathFollow(robot, -.05, 1.6-robot.x/16-(auto==1?.2:0), 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
 
-            if (robot.x > 3)
+            if (robot.x > 4)
                 robot.rightRampDown();
-            if (robot.x > 5.5-(auto==2?1:0))
+            if (robot.x > 6.5-(auto==2?1:0))
                 robot.depositRight();
             Hardware.currentOpMode.telemetry.addData("x", robot.x);
             Hardware.currentOpMode.telemetry.addData("y", robot.y);
@@ -147,7 +149,7 @@ public class remoteAuto extends LinearOpMode {
             telemetry.addData("theta", robot.theta);
             telemetry.update();
             robot.updatePositionRoadRunner();
-            robot.drive(-.7, -1,-.1);
+            robot.drive(-.45, -1,-.1);
 
 
         }
@@ -174,7 +176,7 @@ public class remoteAuto extends LinearOpMode {
         ElapsedTime intakePowerOff = new ElapsedTime();
         intakePowerOff.startTime();
         //drive into warehouse to grab freight
-        while(opModeIsActive()&&robot.y>-68&&(robot.y>-43||timer.seconds()<.05||robot.intakeArm.getCurrentPosition()<60)&&(robot.y>-43||robot.intakeSeeperDraw()<4.3||robot.intakeArm.getCurrentPosition()<60))
+        while(opModeIsActive()&&robot.y>-76&&(robot.y>-44||timer.seconds()<.05||robot.intakeArm.getCurrentPosition()<60)&&(robot.y>-44||robot.intakeSeeperDraw()<4.05||robot.intakeArm.getCurrentPosition()<60)&&timer.seconds()<1)
         {
             telemetry.addData("x", robot.x);
             telemetry.addData("y", robot.y);
@@ -182,36 +184,48 @@ public class remoteAuto extends LinearOpMode {
             telemetry.addData("draw", robot.intakeSeeperDraw());
             telemetry.addData("time", timer.seconds());
             telemetry.update();
-            if (robot.intakeSeeperDraw() < 3.7 && !hitFreight) {
+            if ((robot.intakeSeeperDraw() < 3.65 || robot.y>-44)&& !hitFreight) {
                 timer.reset();
                 intakePowerOff.reset();
-            } else if (robot.intakeSeeperDraw() >= 3.7)
+            } else if (robot.intakeSeeperDraw() >= 3.65)
                 hitFreight = true;
 
             robot.deposit();
             if(intakePowerOff.seconds()>2)
             {
                 robot.setIntakePower(0);
-                if(intakePowerOff.seconds()>3.2)
+                if(intakePowerOff.seconds()>2.2)
                     intakePowerOff.reset();
             }
             else
             {
                 robot.setIntakePower(1);
             }
-            double speed = robot.y < -25 ? -.4 : -.8;
+            double speed = robot.y < -25 ? -.25 : -.7;
             //slow down after the robot has freight
             if (hitFreight)
-                speed = .025;
+                speed = .04;
             robot.drive(speed, -.1, 0);
             robot.intake();
             robot.updatePositionRoadRunnerOnlyRight();
         }
+        if(robot.distanceSensor.getVoltage()/6.2*2000<55)
+            robot.resetOdometry(0,-77.5+robot.distanceSensor.getVoltage()/6.2*2000,3*Math.PI/2);
 
-        robot.setIntakePower(.4);
-        while (opModeIsActive() && robot.y < -20) {
+        robot.setIntakePower(.2);
+        while (opModeIsActive() && robot.y < -22) {
+            if(intakePowerOff.seconds()>2)
+            {
+                robot.setIntakePower(0);
+                if(intakePowerOff.seconds()>2.2)
+                    intakePowerOff.reset();
+            }
+            else
+            {
+                robot.setIntakePower(.3);
+            }
             //if motor stalls run intake backwards to decrease freight
-            if(robot.intakeSeeperDraw()>7)
+            if(robot.intakeSeeperDraw()>6)
                 robot.setIntakePower(-.3);
             robot.deposit();
             robot.drive(1, -.275, 0);
@@ -234,7 +248,7 @@ public class remoteAuto extends LinearOpMode {
                     robot.intakeArm.setPower(-1);
                 }
                     else {
-                    robot.intakeArm.setPower(-1);
+                    robot.intakeArm.setPower(1);
                     robot.intake();
                     robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
@@ -247,12 +261,13 @@ public class remoteAuto extends LinearOpMode {
             telemetry.addData("theta", robot.theta);
             telemetry.update();
         }
+        robot.setIntakePower(1);
         robot.resetDeltaTicks();
         robot.updatePositionRoadRunner();
         robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
         robot.updatePositionRoadRunner();
-        //Drive back to hub
-        while (opModeIsActive() & robot.x < 21.5) {
+        //Drive back to hub to cycle first freight
+        while (opModeIsActive() & robot.x < 21.3) {
 
             robot.intake();
             if (robot.intakeArm.getCurrentPosition() < 30)
@@ -261,15 +276,16 @@ public class remoteAuto extends LinearOpMode {
             telemetry.addData("y", robot.y);
             telemetry.addData("theta", robot.theta);
             telemetry.update();
-            if (robot.x > 2.5) {
+            if (robot.x > 4.2) {
                 robot.deposit();
                 robot.depositLevel = 2;
+                robot.closeIntake();
             }
             if (robot.x < 4)
                 robot.updatePositionRoadRunnerRightAndCenter();
             else
                 robot.updatePositionRoadRunner();
-            robot.drive(.42, 1, 0);
+            robot.drive(.26, 1, 0);
             if (robot.x > 16) {
                 robot.depositRight();
                 robot.rightRampDown();
@@ -278,7 +294,7 @@ public class remoteAuto extends LinearOpMode {
         }
         //stop at hub to deposit
         timer.reset();
-        while(timer.seconds()<.3)
+        while(timer.seconds()<.4)
             robot.drive(0,0,0);
         //This loop runs all cycles except for the first
         for(int i = 0; i<2; i++)
@@ -290,14 +306,15 @@ public class remoteAuto extends LinearOpMode {
             }
 
             //Drive back to wall
-            while (opModeIsActive() & robot.x > 7.1) {
+            while (opModeIsActive() & robot.x > 7.2) {
 
+                telemetry.addData("x", robot.x);
                 telemetry.addData("x", robot.x);
                 telemetry.addData("y", robot.y);
                 telemetry.addData("theta", robot.theta);
                 telemetry.update();
                 robot.updatePositionRoadRunner();
-                PathFollowers.linearTolerancePathFollow(robot, -.76, -1, 3 * Math.PI / 2, 1.5, .04, 0.2, 0, 3 * Math.PI / 2, new Point(20, -5));
+                PathFollowers.linearTolerancePathFollow(robot, -.45, -1, 3 * Math.PI / 2, 1.5, .04, 0.2, 0, 3 * Math.PI / 2, new Point(20, -5));
 
 
             }
@@ -311,8 +328,8 @@ public class remoteAuto extends LinearOpMode {
             timer = new ElapsedTime();
             //square up to wall
             timer.startTime();
-            while (timer.seconds() < .35) {
-                robot.drive(-.15, -.4, 0);
+            while (timer.seconds() < .6) {
+                robot.drive(-.1, -.3-timer.seconds(), 0);
                 robot.updatePositionRoadRunner();
             }
             robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
@@ -320,22 +337,22 @@ public class remoteAuto extends LinearOpMode {
             timer.reset();
             intakePowerOff.reset();
             hitFreight = false;
-            while(opModeIsActive()&&robot.y>-73&&(robot.y>-40||timer.seconds()<.39||robot.intakeArm.getCurrentPosition()<60)&&(robot.y>-40||robot.intakeSeeperDraw()<4.05||robot.intakeArm.getCurrentPosition()<60)) {
+            while(opModeIsActive()&&robot.y>-73&&(robot.y>-44||timer.seconds()<.07||robot.intakeArm.getCurrentPosition()<60)&&(robot.y>-44||robot.intakeSeeperDraw()<3.95||robot.intakeArm.getCurrentPosition()<60)&&timer.seconds()<1) {
                 telemetry.addData("x", robot.x);
                 telemetry.addData("y", robot.y);
                 telemetry.addData("theta", robot.theta);
                 telemetry.addData("draw", robot.intakeSeeperDraw());
                 telemetry.addData("time", timer.seconds());
                 telemetry.update();
-                if (robot.intakeSeeperDraw() < 3.9 && !hitFreight||robot.intakeArm.getCurrentPosition()<60) {
+                if ((robot.intakeSeeperDraw() < 3.6||robot.intakeArm.getCurrentPosition()<60||robot.y>-44) && !hitFreight) {
                     timer.reset();
                     intakePowerOff.reset();
-                } else if (robot.intakeSeeperDraw() >= 3.9)
+                } else if (robot.intakeSeeperDraw() >= 3.6)
                     hitFreight = true;
                 if(intakePowerOff.seconds()>2)
                 {
                     robot.setIntakePower(0);
-                    if(intakePowerOff.seconds()>3.2)
+                    if(intakePowerOff.seconds()>2.2)
                         intakePowerOff.reset();
                 }
                 else
@@ -343,28 +360,54 @@ public class remoteAuto extends LinearOpMode {
                     robot.setIntakePower(1);
                 }
                 robot.deposit();
-                double speed = robot.y < -32 ? -.34 : -.85;
+                double speed = robot.y < -36 ? -.28 : -.8;
                 if (hitFreight)
                     speed = .065;
-                if(timer.seconds()>.125)
+                if(timer.seconds()>.05)
                     robot.drive(0,0,0);
                 else
-                    robot.drive(speed, -.08, 0);
+                    robot.drive(speed, -.25, 0);
                 robot.intake();
                 robot.updatePositionRoadRunnerOnlyRight();
             }
 
             //use ultra sonic sensor to reset position
-            robot.resetOdometry(0,-77.5+robot.distanceSensor.getVoltage()/6.21*2000,3*Math.PI/2);
+            if(robot.distanceSensor.getVoltage()/6.2*2000<55)
+                robot.resetOdometry(0,-77.5+robot.distanceSensor.getVoltage()/6.2*2000,3*Math.PI/2);
 
             timeStarted=false;
             t=new ElapsedTime();
-            robot.setIntakePower(.4);
-            while (opModeIsActive() && robot.y < -29) {
+            ElapsedTime slowStrafe = new ElapsedTime();
+            slowStrafe.startTime();
+            robot.setIntakePower(.2);
+            ElapsedTime outtakeTimer = new ElapsedTime();
+            boolean outtake=false;
+            outtakeTimer.startTime();
+            robot.intakeArmUp();
+            //Leave warehouse
+            while (opModeIsActive() && robot.y < -28)
+            {
+                if(intakePowerOff.seconds()>.5&&robot.intakeArm.getCurrentPosition()>30)
+                {
+                    robot.setIntakePower(0);
+                    if(intakePowerOff.seconds()>.8)
+                        intakePowerOff.reset();
+                }
+                else
+                {
+                    robot.setIntakePower(.2);
+                }
                 //if motor is stalling run intake backwards to free freight
                 if(robot.intakeSeeperDraw()>7)
+                {
+                    outtakeTimer.reset();
+                    outtake=true;
+                }
+                if(outtake&&outtakeTimer.seconds()<.1)
                     robot.setIntakePower(-.3);
-                robot.drive(1, -.25, 0);
+                else if (outtakeTimer.seconds()>.1)
+                    outtakeTimer.reset();
+                robot.drive(1, -.4+HelperMethods.clamp(0,slowStrafe.seconds()/1.5,.2), 0);
                 robot.deposit();
                 //bring intake arm up
                 robot.intakeArmUp();
@@ -382,9 +425,9 @@ public class remoteAuto extends LinearOpMode {
                         robot.intakeArm.setPower(-1);
                     }
                     else {
-                        robot.intakeArm.setPower(-1);
-                        robot.intake();
                         robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        robot.intakeArm.setPower(1);
+                        robot.intake();
                     }
                 }
                 else
@@ -395,12 +438,14 @@ public class remoteAuto extends LinearOpMode {
                 telemetry.addData("theta", robot.theta);
                 telemetry.update();
             }
+            robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.setIntakePower(1);
             robot.resetDeltaTicks();
             robot.updatePositionRoadRunner();
             robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
             robot.updatePositionRoadRunner();
             //Drive back to hub
-            while (opModeIsActive() & robot.x < 21.5) {
+            while (opModeIsActive() & robot.x < 22.9) {
 
                 robot.intake();
                 if (robot.intakeArm.getCurrentPosition() < 30)
@@ -410,16 +455,18 @@ public class remoteAuto extends LinearOpMode {
                 telemetry.addData("theta", robot.theta);
                 telemetry.update();
                 //Send up deposit for scoring freight
-                if (robot.x > 4) {
+                if (robot.x > 4.2) {
                     robot.deposit();
                     robot.depositLevel = 2;
+                    robot.closeIntake();
+                    robot.setIntakePower(0);
                 }
                 if (robot.x < 4)
                     robot.updatePositionRoadRunnerRightAndCenter();
                 else
                     robot.updatePositionRoadRunner();
                 //drive in direction of hub with proportional slowing as it approaches
-                robot.drive(.42*(35-robot.x)/35, 1*(35-robot.x)/35, 0);
+                robot.drive(.388*(35-robot.x)/35, 1*(35-robot.x)/35, 0);
                 //send freight out
                 if (robot.x > 17) {
                     robot.depositRight();
@@ -429,7 +476,7 @@ public class remoteAuto extends LinearOpMode {
             }
             //Stop at hub to deposit
             timer.reset();
-            while(timer.seconds()<.3)
+            while(timer.seconds()<.4)
                 robot.drive(0,0,0);
 
         }
@@ -465,16 +512,16 @@ public class remoteAuto extends LinearOpMode {
         robot.updatePositionRoadRunner();
         timer.reset();
         hitFreight = false;
-        while(opModeIsActive()&&robot.y>-73&&(robot.y>-45||timer.seconds()<.39||robot.intakeArm.getCurrentPosition()<60)&&(robot.intakeSeeperDraw()<4.05||robot.intakeArm.getCurrentPosition()<60)) {
+        while(opModeIsActive()&&robot.y>-73&&(robot.y>-45||timer.seconds()<.1||robot.intakeArm.getCurrentPosition()<60)&&(robot.intakeSeeperDraw()<4.05||robot.intakeArm.getCurrentPosition()<60)) {
             telemetry.addData("x", robot.x);
             telemetry.addData("y", robot.y);
             telemetry.addData("theta", robot.theta);
             telemetry.addData("draw", robot.intakeSeeperDraw());
             telemetry.addData("time", timer.seconds());
             telemetry.update();
-            if (robot.intakeSeeperDraw() < 3.9 && !hitFreight||robot.intakeArm.getCurrentPosition()<60) {
+            if (robot.intakeSeeperDraw() < 3.6||robot.intakeArm.getCurrentPosition()<60||robot.y>-45 && !hitFreight) {
                 timer.reset();
-            } else if (robot.intakeSeeperDraw() >= 3.9)
+            } else if (robot.intakeSeeperDraw() >= 3.6)
                 hitFreight = true;
             robot.deposit();
             double speed = robot.y < -30 ? -.35 : -.85;
@@ -488,31 +535,8 @@ public class remoteAuto extends LinearOpMode {
             robot.updatePositionRoadRunnerOnlyRight();
         }
 
-        //Drive back to wall
-        while (opModeIsActive() & robot.x > 6.25) {
+        robot.setIntakePower(0);
 
-            telemetry.addData("x", robot.x);
-            telemetry.addData("y", robot.y);
-            telemetry.addData("theta", robot.theta);
-            telemetry.update();
-            robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot, -.76, -1, 3 * Math.PI / 2, 1.5, .04, 0.2, 0, 3 * Math.PI / 2, new Point(20, -5));
-
-
-        }
-        //deployed intake and start brushes
-        robot.depositLevel = 0;
-        robot.intakeArmDown();
-        robot.closeIntake();
-        robot.setIntakePower(1);
-        robot.rightRampUp();
-        robot.depositNeutral();
-        timer = new ElapsedTime();
-        timer.startTime();
-        while (timer.seconds() < .25) {
-            robot.drive(-.2, -.55, 0);
-            robot.updatePositionRoadRunner();
-        }
 
 
         //Stop in place for park
