@@ -559,7 +559,7 @@ public class Hardware
     public void intakeStart() {intakeBlocker.setPosition(0.1);}
     public void openIntake() {intakeBlocker.setPosition(.74);}
     //public void intakeHalfWay(){intakeBlocker.setPosition(.31);}
-    public void closeIntake(){intakeBlocker.setPosition(0.545);}
+    public void closeIntake(){intakeBlocker.setPosition(0.532);}
     public void reallyCloseIntake(){intakeBlocker.setPosition(0.75);}
 
     //Set drive power
