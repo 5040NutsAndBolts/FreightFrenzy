@@ -69,6 +69,7 @@ public class Hardware
     private CRServo capperOut;
 
     public AnalogInput distanceSensor;
+    public AnalogInput sideDistanceSensor;
 
     public static LinearOpMode currentOpMode;
 
@@ -83,6 +84,8 @@ public class Hardware
     public double x=0;
     public double y=0;
     public double theta=0;
+
+    public RevColorSensorV3 lineColorSensor;
 
     BNO055IMU imu;
 
@@ -201,6 +204,8 @@ public class Hardware
         centerOdomServo=hardwareMap.servo.get("Center Odom Servo");
 
         distanceSensor = hardwareMap.get(AnalogInput.class, "Distance Sensor");
+        sideDistanceSensor = hardwareMap.get(AnalogInput.class, "Side Distance Sensor");
+        lineColorSensor = hardwareMap.get(RevColorSensorV3.class,"Line Sensor");
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
