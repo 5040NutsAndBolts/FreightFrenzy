@@ -37,7 +37,7 @@ public class Hardware
     public DcMotorEx depositSlide;
 
     private CRServo leftDuckSpinner;
-    private CRServo rightDuckSpinner;
+    private DcMotor rightDuckSpinner;
 
     //drive train motors
     public DcMotorEx frontLeft;
@@ -152,7 +152,10 @@ public class Hardware
 
         //Duck spinners
         leftDuckSpinner = hardwareMap.crservo.get("Left Duck Spinner");
-        rightDuckSpinner = hardwareMap.crservo.get("Right Duck Spinner");
+        rightDuckSpinner = hardwareMap.get(DcMotor.class,"Right Duck Spinner");
+        rightDuckSpinner.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDuckSpinner.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDuckSpinner.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Drive motors
         frontLeft = hardwareMap.get(DcMotorEx.class,"Front Left");
@@ -306,7 +309,7 @@ public class Hardware
 
     //Run ducks spinners
     public void setLeftDuckSpinnerPower(double power){leftDuckSpinner.setPower(power);}
-    public void setRightDuckSpinnerPower(double power){rightDuckSpinner.setPower(power);}
+    public void setRightDuckSpinnerPower(double power){rightDuckSpinner.setPower(power/2.8);}
 
     //Intake methods
     public void setIntakePower(double power){intakeSweeper.setPower(power);}
