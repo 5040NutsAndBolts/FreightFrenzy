@@ -9,6 +9,7 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -86,6 +87,8 @@ public class Hardware
     public double theta=0;
 
     public RevColorSensorV3 lineColorSensor;
+
+    public ColorRangeSensor intakeColorSensor;
 
     BNO055IMU imu;
 
@@ -208,7 +211,10 @@ public class Hardware
 
         distanceSensor = hardwareMap.get(AnalogInput.class, "Distance Sensor");
         sideDistanceSensor = hardwareMap.get(AnalogInput.class, "Side Distance Sensor");
+
         lineColorSensor = hardwareMap.get(RevColorSensorV3.class,"Line Sensor");
+
+        intakeColorSensor = hardwareMap.get(ColorRangeSensor.class, "Intake Color Sensor");
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
