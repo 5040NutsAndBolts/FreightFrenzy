@@ -224,7 +224,7 @@ public class Teleop extends LinearOpMode
             if(gamepad1.right_trigger>0)
                 robot.setIntakePower(gamepad1.right_trigger);
             else
-                robot.setIntakePower(-gamepad1.left_trigger * .8);
+                robot.setIntakePower(-gamepad1.left_trigger * .57);
 
             if(gamepad1.b&&!b1Pressed)
             {
@@ -250,8 +250,8 @@ public class Teleop extends LinearOpMode
             {
                 //capper
                 robot.setOutPower(gamepad1.right_stick_y>0||gamepad1.right_stick_button?gamepad1.right_stick_y:gamepad1.right_stick_y*.15);
-                horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.6,1);
-                verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.6,1);
+                horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.48,1);
+                verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.48,1);
             }
             //Set duck spinner power
             if(gamepad2.left_trigger>.25)
