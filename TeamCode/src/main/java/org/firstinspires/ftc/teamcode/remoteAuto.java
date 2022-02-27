@@ -132,11 +132,11 @@ public class remoteAuto extends LinearOpMode {
 
             robot.deposit();
             robot.updatePositionRoadRunner();
-            PathFollowers.linearTolerancePathFollow(robot, -.05, 1.7-robot.x/16-(auto==1?.2:0), 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
+            PathFollowers.linearTolerancePathFollow(robot, -.05, 1.7-robot.x/15.5-(auto==1?.2:0), 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
 
-            if (robot.x > 3.5)
+            if (robot.x > 4.1)
                 robot.rightRampDown();
-            if (robot.x > 8)
+            if (robot.x > 8.2)
                 robot.depositRight();
             Hardware.currentOpMode.telemetry.addData("x", robot.x);
             Hardware.currentOpMode.telemetry.addData("y", robot.y);
@@ -146,7 +146,7 @@ public class remoteAuto extends LinearOpMode {
         }
         ElapsedTime waitAtHub = new ElapsedTime();
         waitAtHub.startTime();
-        while(opModeIsActive()&&waitAtHub.seconds()<.35)
+        while(opModeIsActive()&&waitAtHub.seconds()<.38)
             robot.drive(0, 0, 0);
 
         ElapsedTime slowToWall = new ElapsedTime();
@@ -166,7 +166,7 @@ public class remoteAuto extends LinearOpMode {
         colors[2] = robot.lineColorSensor.alpha();
 
         Arrays.sort(colors);
-        int lineValue= (int) Math.round((double)colors[1]*1.10);
+        int lineValue= (int) Math.round((double)colors[1]*1.11);
 
         //deployed intake and start brushes
         robot.depositLevel = 0;
@@ -190,6 +190,8 @@ public class remoteAuto extends LinearOpMode {
         robot.closeIntake();
         ElapsedTime intakePowerOff = new ElapsedTime();
         intakePowerOff.startTime();
+        ElapsedTime rotate = new ElapsedTime();
+        rotate.startTime();
         //drive into warehouse to grab freight
         while(opModeIsActive()&&robot.y>-76&&(robot.y>-40||timer.seconds()<.07||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&(robot.y>-40||(robot.intakeSeeperDraw()<4.6&&robot.intakeColorSensor.red()<540)||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&timer.seconds()<1)
         {
@@ -214,33 +216,34 @@ public class remoteAuto extends LinearOpMode {
             }
             else
             {
-                robot.setIntakePower(.8);
+                robot.setIntakePower(.9);
             }
             double speed = robot.y < -29 ? (robot.y<-35?-.19:-.26) : -.69;
             //slow down after the robot has freight
             if (hitFreight)
                 speed = .04;
-            robot.drive(speed, -.1, 0);
+            double rotation = rotate.seconds()>2.6 ? .1:0;
+            robot.drive(speed, rotate.seconds()>2.6?0:-.1, rotation);
             robot.intake();
             robot.updatePositionRoadRunnerOnlyRight();
         }
         //use ultra sonic sensor to reset position
         if(robot.distanceSensor.getVoltage()/6.234*2000<55) {
-            robot.resetOdometry(0, -74 + robot.distanceSensor.getVoltage() / 6.234 * 2000, 3 * Math.PI / 2);
+            robot.resetOdometry(0, -79 + robot.distanceSensor.getVoltage() / 6.234 * 2000, 3 * Math.PI / 2);
 
         }
 
         boolean hitLine=false;
 
         robot.setIntakePower(.2);
+
         ElapsedTime slowStrafe = new ElapsedTime();
         slowStrafe.startTime();
         intakePowerOff.reset();
         //ensure robot is fully in warehouse
         while (opModeIsActive() && robot.y > -48) {
             //if motor stalls run intake backwards to decrease freight
-            if(robot.intakeSeeperDraw()>7.6)
-                robot.setIntakePower(-.1);
+
             robot.deposit();
             robot.drive(-.3, -.4+HelperMethods.clamp(0,slowStrafe.seconds()/1.5,.2), 0);
 
@@ -278,7 +281,7 @@ public class remoteAuto extends LinearOpMode {
 
 
 
-        while (opModeIsActive() && robot.y < -26) {
+        while (opModeIsActive() && robot.y < -28) {
             try {
                 f.append((robot.lineColorSensor.alpha()+"\n"));
             } catch (IOException e) {
@@ -288,20 +291,9 @@ public class remoteAuto extends LinearOpMode {
             {
                 hitLine=true;
                 robot.resetOdometry(0, -35, 3 * Math.PI / 2);
-            }
-            if(intakePowerOff.seconds()>.35)
-            {
-                robot.setIntakePower(.2);
-                if(intakePowerOff.seconds()>2.2)
-                    intakePowerOff.reset();
-            }
-            else
-            {
                 robot.setIntakePower(0);
             }
-            //if motor stalls run intake backwards to decrease freight
-            if(robot.intakeSeeperDraw()>7.6)
-                robot.setIntakePower(-.1);
+
             robot.deposit();
             robot.drive(1, -.4+HelperMethods.clamp(0,slowStrafe.seconds()/1.5,.2), 0);
 
@@ -360,7 +352,7 @@ public class remoteAuto extends LinearOpMode {
                 robot.updatePositionRoadRunnerRightAndCenter();
             else
                 robot.updatePositionRoadRunner();
-            robot.drive(.175, 1, 0);
+            robot.drive(.121, 1, 0);
             if (robot.x > 19) {
                 robot.depositRight();
                 if(robot.x>20)
@@ -374,7 +366,7 @@ public class remoteAuto extends LinearOpMode {
             robot.drive(0,0,0);
 
         //This loop runs all cycles except for the first
-        for(int i = 0; i<3; i++)
+        for(int i = 0; i<3&&totalAutoTime.seconds()<24.2; i++)
         {
 
             try {
@@ -418,10 +410,11 @@ public class remoteAuto extends LinearOpMode {
             robot.updatePositionRoadRunner();
             timer.reset();
             intakePowerOff.reset();
+            double totalWiggle=0;
             hitFreight = false;
             ElapsedTime wiggle = new ElapsedTime();
             wiggle.startTime();
-            while(opModeIsActive()&&robot.y>-73&&(robot.y>-39||timer.seconds()<.17||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&(robot.y>-39||(robot.intakeColorSensor.red()<540&&robot.intakeSeeperDraw()<5)||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&timer.seconds()<1) {
+            while(opModeIsActive()&&wiggle.seconds()<4.6&&robot.y>-73&&(robot.y>-39||timer.seconds()<.17||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&(robot.y>-39||(robot.intakeColorSensor.red()<540&&robot.intakeSeeperDraw()<5)||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&timer.seconds()<1) {
                 telemetry.addData("x", robot.x);
                 telemetry.addData("y", robot.y);
                 telemetry.addData("theta", robot.theta);
@@ -441,31 +434,34 @@ public class remoteAuto extends LinearOpMode {
                 }
                 else
                 {
-                    robot.setIntakePower(.8);
+                    robot.setIntakePower(.9);
                 }
                 robot.deposit();
-                double speed = robot.y < -31.5 ? (robot.y<-50?-.24:-.29) : -.68;
-                double rotation = wiggle.seconds()>2.6 ? .1:0;
+                double speed = robot.y < -32 ? (robot.y<-52?-.21:-.26) : -.66;
+                double rotation = wiggle.seconds()>2.8 ? .13:0;
                 if (hitFreight)
                     speed = .065;
+                else if(wiggle.seconds()>3.8)
+                    speed=-.12;
                 if(timer.seconds()>.05)
                     robot.drive(0,0,0);
                 else
                     robot.drive(speed, wiggle.seconds()>2.6 ?0:-.25, rotation);
                 robot.intake();
                 robot.updatePositionRoadRunnerOnlyRight();
+                totalWiggle=wiggle.seconds();
             }
 
             //use ultra sonic sensor to reset position
             if(robot.distanceSensor.getVoltage()/6.234*2000<55)
-                robot.resetOdometry(0, -77.9 + robot.distanceSensor.getVoltage() / 6.234 * 2000, 3 * Math.PI / 2);
+                robot.resetOdometry(0, -80 + robot.distanceSensor.getVoltage() / 6.234 * 2000, 3 * Math.PI / 2);
 
 
             timeStarted=false;
             t=new ElapsedTime();
             slowStrafe = new ElapsedTime();
             slowStrafe.startTime();
-            robot.setIntakePower(.1);
+            robot.setIntakePower(.2);
             ElapsedTime outtakeTimer = new ElapsedTime();
             boolean outtake=false;
             outtakeTimer.startTime();
@@ -475,19 +471,9 @@ public class remoteAuto extends LinearOpMode {
 
 
             //make sure robot fully enters warehouse
-            while (opModeIsActive() && robot.y > -53)
+            while (opModeIsActive() && robot.y > -56.5)
             {
 
-                if(intakePowerOff.seconds()>.5&&robot.intakeArm.getCurrentPosition()>10)
-                {
-                    robot.setIntakePower(0);
-                    if(intakePowerOff.seconds()>.8)
-                        intakePowerOff.reset();
-                }
-                else
-                {
-                    robot.setIntakePower(.1);
-                }
                 //if motor is stalling run intake backwards to free freight
                 if(robot.intakeSeeperDraw()>8)
                 {
@@ -495,7 +481,7 @@ public class remoteAuto extends LinearOpMode {
                     outtake=true;
                 }
                 if(outtake&&outtakeTimer.seconds()<.1)
-                    robot.setIntakePower(-.3);
+                    robot.setIntakePower(-.23);
                 else if (outtakeTimer.seconds()>.1)
                     outtakeTimer.reset();
                 robot.drive(-.3, -.4+HelperMethods.clamp(0,1-slowStrafe.seconds()/1.5,.2), 0);
@@ -536,8 +522,6 @@ public class remoteAuto extends LinearOpMode {
 
 
 
-
-
             //Leave warehouse
             while (opModeIsActive() && robot.y < -28)
             {
@@ -550,17 +534,9 @@ public class remoteAuto extends LinearOpMode {
                 {
                     hitLine=true;
                     robot.resetOdometry(0, -35, 3 * Math.PI / 2);
-                }
-                if(intakePowerOff.seconds()>.5&&robot.intakeArm.getCurrentPosition()>10)
-                {
                     robot.setIntakePower(0);
-                    if(intakePowerOff.seconds()>.8)
-                        intakePowerOff.reset();
                 }
-                else
-                {
-                    robot.setIntakePower(.1);
-                }
+
                 //if motor is stalling run intake backwards to free freight
                 if(robot.intakeSeeperDraw()>8)
                 {
@@ -568,10 +544,13 @@ public class remoteAuto extends LinearOpMode {
                     outtake=true;
                 }
                 if(outtake&&outtakeTimer.seconds()<.1)
-                    robot.setIntakePower(-.3);
+                    robot.setIntakePower(-.23);
                 else if (outtakeTimer.seconds()>.1)
                     outtakeTimer.reset();
-                robot.drive(1, -.4+HelperMethods.clamp(0,1-slowStrafe.seconds()/1.5,.2), 0);
+                double rotation=0;
+                if(totalWiggle>3.4&&robot.y<-50)
+                    rotation=-.05;
+                robot.drive(1, -.4+HelperMethods.clamp(0,1-slowStrafe.seconds()/1.5,.2), rotation);
                 robot.deposit();
                 //bring intake arm up
                 robot.intakeArmUp();
@@ -630,18 +609,18 @@ public class remoteAuto extends LinearOpMode {
                 else
                     robot.updatePositionRoadRunner();
                 //drive in direction of hub with proportional slowing as it approaches
-                robot.drive(.195*(40-robot.x)/40, 1*(40-robot.x)/40, 0);
+                robot.drive(.132*(37-robot.x)/37, 1*(37-robot.x)/37, 0);
                 //send freight out
-                if (robot.x > 21.7) {
+                if (robot.x > 20.9) {
                     robot.depositRight();
-                    if(robot.x>21.8)
+                    if(robot.x>21)
                     robot.rightRampDown();
                 }
 
             }
             //Stop at hub to deposit
             timer.reset();
-            while(timer.seconds()<.38)
+            while(timer.seconds()<.39)
                 robot.drive(0,0,0);
 
         }
@@ -675,7 +654,7 @@ public class remoteAuto extends LinearOpMode {
 
         ElapsedTime intakeUpTimer = new ElapsedTime();
         intakeUpTimer.startTime();
-        while (timer.seconds() < .25) {
+        while (timer.seconds() < .23) {
             robot.drive(-.2, -.55, 0);
             robot.updatePositionRoadRunner();
             if(robot.depositSlide.getCurrentPosition()<40)

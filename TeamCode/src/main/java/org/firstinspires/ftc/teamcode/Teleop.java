@@ -29,6 +29,7 @@ public class Teleop extends LinearOpMode
     boolean leftDepositeRamp=true;
     boolean linkedDeposit = true;
     boolean tseMode = false;
+    ElapsedTime intakeTimer;
 
     ElapsedTime e;
 
@@ -42,7 +43,8 @@ public class Teleop extends LinearOpMode
         double lastTime=0;
         Hardware.currentOpMode=this;
         Hardware robot = new Hardware(hardwareMap);
-
+        intakeTimer=new ElapsedTime();
+        intakeTimer.startTime();
         telemetry.addLine("init done");
         telemetry.update();
         waitForStart();
@@ -50,7 +52,7 @@ public class Teleop extends LinearOpMode
         robot.depositNeutral();
         robot.rightRampUp();
         robot.leftRampUp();
-
+        robot.openIntake();
         robot.intakeStart();
 
         Hardware.currentOpMode=this;
@@ -273,13 +275,14 @@ public class Teleop extends LinearOpMode
             if(intakeUp)
             {
                 robot.intakeArmUp();
-                if(robot.intakeArmPosition()<30)
+                if(robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)
                     robot.openIntake();
+
             }
             else
             {
                 robot.closeIntake();
-               robot.intakeArmDown();
+                robot.intakeArmDown();
             }
 
 
@@ -288,20 +291,14 @@ public class Teleop extends LinearOpMode
 
             PIDFCoefficients pid = robot.depositSlide.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
             telemetry.addData("Linked Deposit",linkedDeposit);
-            telemetry.addData("color",robot.colorsensor.red()+" "+robot.colorsensor.green()+" "+robot.colorsensor.blue()+" "+robot.colorsensor.alpha());
             telemetry.addData("Slow-mode", slowMode);
             telemetry.addData("override",robot.depositOverride);
             telemetry.addData("deposit level", robot.depositLevel);
-            telemetry.addData("x",robot.x);
-            telemetry.addData("y",robot.y);
+            telemetry.addData("intake pos",robot.intakeArm.getCurrentPosition());
             telemetry.addData("horiz",horizontalPos);
             telemetry.addData("vert",verticalPos);
-            telemetry.addData("theta",robot.theta);
             telemetry.addData("voltage", robot.intakeSeeperDraw());
-            telemetry.addData("blue", robot.intakeColorSensor.blue());
             telemetry.addData("red", robot.intakeColorSensor.red());
-            telemetry.addData("green", robot.intakeColorSensor.green());
-            telemetry.addData("alpha", robot.intakeColorSensor.alpha());
             lastTime=e.seconds();
             telemetry.update();
 

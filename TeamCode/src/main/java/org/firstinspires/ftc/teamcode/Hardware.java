@@ -251,14 +251,14 @@ public class Hardware
     //Deposit ramp positions
     public void leftRampUp(){leftRamp.setPosition(.1);}
     public void leftRampDown(){leftRamp.setPosition(.47);}
-    public void rightRampUp(){rightRamp.setPosition(.97);}
-    public void rightRampDown(){rightRamp.setPosition(.39);}
+    public void rightRampUp(){rightRamp.setPosition(.96);}
+    public void rightRampDown(){rightRamp.setPosition(.4);}
 
     //Deposit flicker positions
     public void depositLeft(){depositFlicker.setPosition(0);}
     public void depositRight(){depositFlicker.setPosition(.95);}
     public void depositHalfRight(){depositFlicker.setPosition(.6);}
-    public void depositNeutral(){depositFlicker.setPosition(.6);}
+    public void depositNeutral(){depositFlicker.setPosition(.62);}
     public int depositPosition(){return depositSlide.getCurrentPosition();}
 
 
@@ -349,28 +349,36 @@ public class Hardware
 
                 } else if(resetEncoder)
                 {
-                    intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                    intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     intakeArm.setPower(0);
                 }
                 else
                 {
-                    intakeArm.setTargetPosition(0);
+                    intakeArm.setTargetPosition(-45);
                     intakeArm.setPower(1);
                 }
 
             } else
             {
                 resetEncoder = false;
-                if (intakeArm.getCurrentPosition() > 103)
+                if (intakeArm.getCurrentPosition() > 230)
                 {
                     intakeArm.setPower(0);
                     if(intakeArm.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
                         intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 } else
                 {
-                    intakeArm.setPower(0);
-                    if(intakeArm.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.FLOAT)
-                        intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                    if(colorsensor.getDistance(DistanceUnit.INCH)>1.5)
+                    {
+                        intakeArm.setPower(0);
+                        if (intakeArm.getZeroPowerBehavior() != DcMotor.ZeroPowerBehavior.FLOAT)
+                            intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                    }
+                    else
+                    {
+                        intakeArm.setPower(.5);
+                        intakeArm.setTargetPosition(274);
+                    }
                 }
 
             }
