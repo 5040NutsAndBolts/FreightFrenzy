@@ -249,7 +249,11 @@ public class Teleop extends LinearOpMode
             else
             {
                 //capper
-                robot.setOutPower(gamepad1.right_stick_y>0||gamepad1.right_stick_button?gamepad1.right_stick_y:gamepad1.right_stick_y*.15);
+                if(Math.abs(gamepad2.right_stick_y)>.1)
+                    robot.setOutPower(gamepad2.right_stick_y);
+                else
+                    robot.setOutPower(gamepad1.right_stick_y>0||gamepad1.right_stick_button?gamepad1.right_stick_y:gamepad1.right_stick_y*.15);
+
                 horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.48,1);
                 verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.48,1);
             }
