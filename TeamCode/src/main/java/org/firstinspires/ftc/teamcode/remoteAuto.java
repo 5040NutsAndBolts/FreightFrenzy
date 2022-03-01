@@ -96,7 +96,10 @@ public class remoteAuto extends LinearOpMode {
             telemetry.update();
         }
         waitForStart();
+        robot.setVerticalPosition(1);
+        robot.setHorizontalPosition(.5);
         colors[1] = robot.lineColorSensor.alpha();
+        double ambientIntakeColor=robot.intakeColorSensor.red();
         ElapsedTime totalAutoTime = new ElapsedTime();
         totalAutoTime.startTime();
         //Open CV goes here to spit out 1, 2, or 3
@@ -108,7 +111,7 @@ public class remoteAuto extends LinearOpMode {
         double towardsHub=auto==3?1.25:0;
 
         boolean setMode=true;
-        while (robot.x < 18.5+towardsHub) {
+        while (opModeIsActive()&&robot.x < 18.5+towardsHub) {
             if(robot.x<12)
             {
                 robot.depositLevel = auto==3?2:1;
@@ -158,7 +161,7 @@ public class remoteAuto extends LinearOpMode {
             telemetry.addData("theta", robot.theta);
             telemetry.update();
             robot.updatePositionRoadRunner();
-            double speedPercent=Math.min(slowToWall.seconds()/.4,.65)+.35;
+            double speedPercent=Math.min(slowToWall.seconds()/.35,.62)+.38;
             robot.drive(-.25*speedPercent, -1*speedPercent,0);
 
 
@@ -177,7 +180,7 @@ public class remoteAuto extends LinearOpMode {
         robot.depositNeutral();
         ElapsedTime timer = new ElapsedTime();
         timer.startTime();
-        while (timer.seconds() < .3) {
+        while (opModeIsActive()&&timer.seconds() < .3) {
             robot.drive(-.17, -.39+timer.seconds()/1.8, 0);
             robot.updatePositionRoadRunner();
         }
@@ -193,7 +196,7 @@ public class remoteAuto extends LinearOpMode {
         ElapsedTime rotate = new ElapsedTime();
         rotate.startTime();
         //drive into warehouse to grab freight
-        while(opModeIsActive()&&robot.y>-76&&(robot.y>-40||timer.seconds()<.07||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&(robot.y>-40||(robot.intakeSeeperDraw()<4.6&&robot.intakeColorSensor.red()<550)||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&timer.seconds()<1)
+        while(opModeIsActive()&&robot.y>-76&&(robot.y>-40||timer.seconds()<.07||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&(robot.y>-40||(robot.intakeSeeperDraw()<4.6&&robot.intakeColorSensor.red()<ambientIntakeColor+25)||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&timer.seconds()<1)
         {
             telemetry.addData("x", robot.x);
             telemetry.addData("y", robot.y);
@@ -241,7 +244,7 @@ public class remoteAuto extends LinearOpMode {
         slowStrafe.startTime();
         intakePowerOff.reset();
         //ensure robot is fully in warehouse
-        while (opModeIsActive() && robot.y > -48) {
+        while (opModeIsActive() && robot.y > -48.5) {
             //if motor stalls run intake backwards to decrease freight
 
             robot.deposit();
@@ -281,7 +284,7 @@ public class remoteAuto extends LinearOpMode {
 
 
 
-        while (opModeIsActive() && robot.y < -30.5) {
+        while (opModeIsActive() && robot.y < -30.65) {
             try {
                 f.append((robot.lineColorSensor.alpha()+"\n"));
             } catch (IOException e) {
@@ -334,7 +337,7 @@ public class remoteAuto extends LinearOpMode {
         robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
         robot.updatePositionRoadRunner();
         //Drive back to hub to cycle first freight
-        while (opModeIsActive() & robot.x < 19.5) {
+        while (opModeIsActive() & robot.x < 19.1) {
 
             robot.intake();
             if (robot.intakeArm.getCurrentPosition() < 10)
@@ -353,16 +356,16 @@ public class remoteAuto extends LinearOpMode {
             else
                 robot.updatePositionRoadRunner();
             robot.drive(.1, 1, 0);
-            if (robot.x > 17.75) {
+            if (robot.x > 17.55) {
                 robot.depositRight();
-                if(robot.x>18.25)
+                if(robot.x>18.1)
                     robot.rightRampDown();
             }
 
         }
         //stop at hub to deposit
         timer.reset();
-        while(timer.seconds()<.38)
+        while(opModeIsActive()&&timer.seconds()<.38)
             robot.drive(0,0,0);
         boolean stopped=false;
         //This loop runs all cycles except for the first
@@ -387,7 +390,7 @@ public class remoteAuto extends LinearOpMode {
                 telemetry.addData("theta", robot.theta);
                 telemetry.update();
                 robot.updatePositionRoadRunner();
-                double speedPercent=Math.min(proportionalSpeedIntoWall.seconds()/.4,.65)+.35;
+                double speedPercent=Math.min(proportionalSpeedIntoWall.seconds()/.4,.5)+.5;
                 PathFollowers.linearTolerancePathFollow(robot, -.3*speedPercent, -1*speedPercent, 3 * Math.PI / 2, 1.5, .04, 0.2, 0, 3 * Math.PI / 2, new Point(20, -5));
 
 
@@ -402,8 +405,8 @@ public class remoteAuto extends LinearOpMode {
             timer = new ElapsedTime();
             //square up to wall
             timer.startTime();
-            while (timer.seconds() < .55) {
-                robot.drive(-.11, -.4-timer.seconds(), 0);
+            while (opModeIsActive()&&timer.seconds() < .45) {
+                robot.drive(-.15, -.4-timer.seconds()*1.5, 0);
                 robot.updatePositionRoadRunner();
             }
             robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
@@ -414,7 +417,7 @@ public class remoteAuto extends LinearOpMode {
             hitFreight = false;
             ElapsedTime wiggle = new ElapsedTime();
             wiggle.startTime();
-            while(opModeIsActive()&&wiggle.seconds()<4.6&&robot.y>-73&&(robot.y>-39||timer.seconds()<.17||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&(robot.y>-39||(robot.intakeColorSensor.red()<550&&robot.intakeSeeperDraw()<5)||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&timer.seconds()<1) {
+            while(opModeIsActive()&&wiggle.seconds()<4.6&&robot.y>-73&&(robot.y>-39||timer.seconds()<.17||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&(robot.y>-39||(robot.intakeColorSensor.red()<ambientIntakeColor+25&&robot.intakeSeeperDraw()<5)||robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)&&timer.seconds()<1) {
                 telemetry.addData("x", robot.x);
                 telemetry.addData("y", robot.y);
                 telemetry.addData("theta", robot.theta);
@@ -437,8 +440,8 @@ public class remoteAuto extends LinearOpMode {
                     robot.setIntakePower(.9);
                 }
                 robot.deposit();
-                double speed = robot.y < -32.2 ? (robot.y<-52.5?-.21:-.26) : -.71;
-                double rotation = wiggle.seconds()>2.8 ? (wiggle.seconds()>3?.23:.13):0;
+                double speed = robot.y < -32.2-.02*i ? (robot.y<-52.5?-.21:-.26-i*.05) : -.71-i*.07;
+                double rotation = wiggle.seconds()>2.8 ? (wiggle.seconds()>3?.237:.137):.07;
                 if (hitFreight)
                     speed = .065;
                 else if(wiggle.seconds()>3.8)
@@ -446,7 +449,7 @@ public class remoteAuto extends LinearOpMode {
                 if(timer.seconds()>.05)
                     robot.drive(0,0,0);
                 else
-                    robot.drive(speed, wiggle.seconds()>2.6 ?0:-.25, rotation);
+                    robot.drive(speed, wiggle.seconds()>2.6 ?0:-.22, rotation);
                 robot.intake();
                 robot.updatePositionRoadRunnerOnlyRight();
                 totalWiggle=wiggle.seconds();
@@ -471,11 +474,11 @@ public class remoteAuto extends LinearOpMode {
 
 
             //make sure robot fully enters warehouse
-            while (opModeIsActive() && robot.y > -56.5)
+            while (opModeIsActive() && robot.y > -58.75)
             {
 
                 //if motor is stalling run intake backwards to free freight
-                if(robot.intakeSeeperDraw()>8.2)
+                /*if(robot.intakeSeeperDraw()>8.2)
                 {
                     outtakeTimer.reset();
                     outtake=true;
@@ -485,8 +488,8 @@ public class remoteAuto extends LinearOpMode {
                 else if (outtakeTimer.seconds()>.1) {
                     outtakeTimer.reset();
                     robot.setIntakePower(.22);
-                }
-                robot.drive(-.3, -.4+HelperMethods.clamp(0,1-slowStrafe.seconds()/1.5,.2), 0);
+                }*/
+                robot.drive(-.65, -.4+HelperMethods.clamp(0,1-slowStrafe.seconds()/1.5,.2), 0);
                 robot.deposit();
                 //bring intake arm up
                 robot.intakeArmUp();
@@ -546,7 +549,7 @@ public class remoteAuto extends LinearOpMode {
                 }
 
                 //if motor is stalling run intake backwards to free freight
-                if(robot.intakeSeeperDraw()>8.5)
+                /*if(robot.intakeSeeperDraw()>8.5)
                 {
                     outtakeTimer.reset();
                     outtake=true;
@@ -556,7 +559,7 @@ public class remoteAuto extends LinearOpMode {
                 else if (outtakeTimer.seconds()>.1) {
                     outtakeTimer.reset();
                     robot.setIntakePower(.22);
-                }
+                }*/
                 double rotation=0;
                 if(totalWiggle>3.4&&robot.y<-50)
                     rotation=-.05;
@@ -630,7 +633,7 @@ public class remoteAuto extends LinearOpMode {
             }
             //Stop at hub to deposit
             timer.reset();
-            while(timer.seconds()<.39)
+            while(opModeIsActive()&&timer.seconds()<.39)
                 robot.drive(0,0,0);
 
         }
@@ -664,7 +667,7 @@ public class remoteAuto extends LinearOpMode {
 
         ElapsedTime intakeUpTimer = new ElapsedTime();
         intakeUpTimer.startTime();
-        while (timer.seconds() < .23&&!stopped) {
+        while (opModeIsActive()&&timer.seconds() < .23&&!stopped) {
             robot.drive(-.2, -.55, 0);
             robot.updatePositionRoadRunner();
             if(robot.depositSlide.getCurrentPosition()<40)
@@ -728,11 +731,6 @@ public class remoteAuto extends LinearOpMode {
 
         }
 
-        try {
-            f.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
     }
 

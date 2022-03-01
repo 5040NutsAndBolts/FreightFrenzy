@@ -245,6 +245,8 @@ public class Teleop extends LinearOpMode
             {
                 //Set drivetrain power
                 robot.drive(gamepad1.left_stick_y * driveSpeed, gamepad1.left_stick_x * driveSpeed, gamepad1.right_stick_x * driveSpeed);
+                robot.setOutPower(gamepad2.right_stick_y);
+
             }
             else
             {
@@ -257,14 +259,15 @@ public class Teleop extends LinearOpMode
                 horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.48,1);
                 verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.48,1);
             }
+            robot.setRightDuckSpinnerPower(gamepad2.left_stick_button?-.8*gamepad2.left_trigger:-gamepad2.left_trigger);
             //Set duck spinner power
             if(gamepad2.left_trigger>.25)
             {
                 robot.setLeftDuckSpinnerPower(-1);
-                robot.setRightDuckSpinnerPower(-1);
+
             }
             else{
-                robot.setRightDuckSpinnerPower(0);
+
                 robot.setLeftDuckSpinnerPower(0);
             }
 

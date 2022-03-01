@@ -315,7 +315,7 @@ public class Hardware
 
     //Run ducks spinners
     public void setLeftDuckSpinnerPower(double power){leftDuckSpinner.setPower(power);}
-    public void setRightDuckSpinnerPower(double power){rightDuckSpinner.setPower(power/2.8);}
+    public void setRightDuckSpinnerPower(double power){rightDuckSpinner.setPower(power/3.25);}
 
     //Intake methods
     public void setIntakePower(double power){intakeSweeper.setPower(power);}
