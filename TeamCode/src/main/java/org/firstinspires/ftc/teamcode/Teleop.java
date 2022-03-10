@@ -16,7 +16,7 @@ public class Teleop extends LinearOpMode
 
     boolean x2Pressed = false;
     double horizontalPos=.5;
-    double verticalPos=.5;
+    double verticalPos=.65;
     boolean a2Pressed = false;
     boolean a1Pressed = false;
     boolean rightRampUp = true;

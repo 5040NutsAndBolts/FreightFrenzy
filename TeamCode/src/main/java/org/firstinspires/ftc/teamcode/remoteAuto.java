@@ -169,7 +169,7 @@ public class remoteAuto extends LinearOpMode {
         colors[2] = robot.lineColorSensor.alpha();
 
         Arrays.sort(colors);
-        int lineValue= (int) Math.round((double)colors[1]*1.11);
+        int lineValue= (int) Math.round((double)colors[1]*1.1);
 
         //deployed intake and start brushes
         robot.depositLevel = 0;
@@ -181,7 +181,7 @@ public class remoteAuto extends LinearOpMode {
         ElapsedTime timer = new ElapsedTime();
         timer.startTime();
         while (opModeIsActive()&&timer.seconds() < .3) {
-            robot.drive(-.17, -.39+timer.seconds()/1.8, 0);
+            robot.drive(-.21, -.3-timer.seconds()/1.8, 0);
             robot.updatePositionRoadRunner();
         }
         robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
@@ -221,7 +221,7 @@ public class remoteAuto extends LinearOpMode {
             {
                 robot.setIntakePower(.89);
             }
-            double speed = robot.y < -29 ? (robot.y<-35?-.19:-.26) : -.69;
+            double speed = robot.y < -29 ? (robot.y<-35?-.19:-.255) : -.69;
             //slow down after the robot has freight
             if (hitFreight)
                 speed = .04;
@@ -238,7 +238,7 @@ public class remoteAuto extends LinearOpMode {
 
         boolean hitLine=false;
 
-        robot.setIntakePower(.22);
+        robot.setIntakePower(.23);
 
         ElapsedTime slowStrafe = new ElapsedTime();
         slowStrafe.startTime();
@@ -247,6 +247,7 @@ public class remoteAuto extends LinearOpMode {
         while (opModeIsActive() && robot.y > -48.5) {
             //if motor stalls run intake backwards to decrease freight
 
+            robot.setIntakePower(.23);
             robot.deposit();
             robot.drive(-.3, -.4+HelperMethods.clamp(0,slowStrafe.seconds()/1.5,.2), 0);
 
@@ -285,12 +286,8 @@ public class remoteAuto extends LinearOpMode {
 
 
         while (opModeIsActive() && robot.y < -30.85) {
-            try {
-                f.append((robot.lineColorSensor.alpha()+"\n"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if(robot.lineColorSensor.alpha()>lineValue&&!hitLine)
+
+            if(robot.lineColorSensor.alpha()>lineValue*.99&&!hitLine)
             {
                 hitLine=true;
                 robot.resetOdometry(0, -35, 3 * Math.PI / 2);
@@ -375,11 +372,6 @@ public class remoteAuto extends LinearOpMode {
         for(int i = 0; i<3&&totalAutoTime.seconds()<23.8; i++)
         {
 
-            try {
-                f.append("\n\n\n\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
             ElapsedTime proportionalSpeedIntoWall = new ElapsedTime();
             proportionalSpeedIntoWall.startTime();
@@ -409,7 +401,7 @@ public class remoteAuto extends LinearOpMode {
             //square up to wall
             timer.startTime();
             while (opModeIsActive()&&timer.seconds() < .45) {
-                robot.drive(-.15, -.4-timer.seconds()*1.5, 0);
+                robot.drive(-.19, -.34-timer.seconds()*1.5, 0);
                 robot.updatePositionRoadRunner();
             }
             robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
@@ -435,7 +427,7 @@ public class remoteAuto extends LinearOpMode {
                 if(intakePowerOff.seconds()>2)
                 {
                     robot.setIntakePower(0);
-                    if(intakePowerOff.seconds()>2.2)
+                    if(intakePowerOff.seconds()>2.14)
                         intakePowerOff.reset();
                 }
                 else
@@ -444,7 +436,7 @@ public class remoteAuto extends LinearOpMode {
                 }
                 robot.deposit();
                 double speed = robot.y < -32.2-.02*i ? (robot.y<-52.5?-.21:-.255-i*.025) : -.73-i*.025;
-                double rotation = wiggle.seconds()>3 ? (wiggle.seconds()>3.2?.23:.13):0;
+                double rotation = wiggle.seconds()>3.05 ? (wiggle.seconds()>3.25?.23:.13):0;
                 if (hitFreight)
                     speed = .065;
                 else if(wiggle.seconds()>3.8)
@@ -452,7 +444,7 @@ public class remoteAuto extends LinearOpMode {
                 if(timer.seconds()>.05)
                     robot.drive(0,0,0);
                 else
-                    robot.drive(speed, wiggle.seconds()>2.7 ?0:-.22, rotation);
+                    robot.drive(speed, wiggle.seconds()>2.9 ?0:-.22, rotation);
                 robot.intake();
                 robot.updatePositionRoadRunnerOnlyRight();
                 totalWiggle=wiggle.seconds();
@@ -467,7 +459,7 @@ public class remoteAuto extends LinearOpMode {
             t=new ElapsedTime();
             slowStrafe = new ElapsedTime();
             slowStrafe.startTime();
-            robot.setIntakePower(.22);
+            robot.setIntakePower(.23);
             ElapsedTime outtakeTimer = new ElapsedTime();
             boolean outtake=false;
             outtakeTimer.startTime();
@@ -524,7 +516,7 @@ public class remoteAuto extends LinearOpMode {
                 telemetry.update();
             }
             robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.setIntakePower(.22);
+            robot.setIntakePower(.23);
             robot.resetDeltaTicks();
             robot.updatePositionRoadRunner();
 
@@ -539,11 +531,7 @@ public class remoteAuto extends LinearOpMode {
             //Leave warehouse
             while (opModeIsActive() && robot.y < -29.25)
             {
-                try {
-                    f.append((robot.lineColorSensor.alpha()+"\n"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+
                 if(robot.lineColorSensor.alpha()>lineValue&&!hitLine)
                 {
                     hitLine=true;
