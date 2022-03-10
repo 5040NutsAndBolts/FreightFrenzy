@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.demobots;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import static java.lang.Math.abs;
 
+@Disabled
 @TeleOp(name = "Kiwi", group = "DemoBot")
 public class Kiwi extends OpMode {
 

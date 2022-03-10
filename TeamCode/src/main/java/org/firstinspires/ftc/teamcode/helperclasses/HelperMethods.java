@@ -110,5 +110,15 @@ public class HelperMethods {
 
     }
 
+    public class FaceDirection
+    {
+
+        public void facing(double x, double y, double theta, double pointX, double pointY)
+        {
+
+        }
+
+    }
+
 
 }

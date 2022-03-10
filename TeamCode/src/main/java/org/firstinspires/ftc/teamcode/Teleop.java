@@ -4,20 +4,19 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
-
-import org.firstinspires.ftc.robotcore.external.navigation.TempUnit;
-import org.firstinspires.ftc.teamcode.helperclasses.ThreadPool;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
 
 @TeleOp(name="Teleop",group="Teleop")
 public class Teleop extends LinearOpMode
 {
 
     boolean x2Pressed = false;
+    double horizontalPos=.5;
+    double verticalPos=.65;
     boolean a2Pressed = false;
     boolean a1Pressed = false;
     boolean rightRampUp = true;
@@ -26,6 +25,11 @@ public class Teleop extends LinearOpMode
     boolean bumperPressed=false;
     boolean b1Pressed=false;
     boolean slowMode=false;
+    boolean b2pressed=false;
+    boolean leftDepositeRamp=true;
+    boolean linkedDeposit = true;
+    boolean tseMode = false;
+    ElapsedTime intakeTimer;
 
     ElapsedTime e;
 
@@ -33,13 +37,14 @@ public class Teleop extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
 
-        ThreadPool.renewPool();
+
         e=new ElapsedTime();
         e.startTime();
         double lastTime=0;
         Hardware.currentOpMode=this;
         Hardware robot = new Hardware(hardwareMap);
-
+        intakeTimer=new ElapsedTime();
+        intakeTimer.startTime();
         telemetry.addLine("init done");
         telemetry.update();
         waitForStart();
@@ -47,6 +52,8 @@ public class Teleop extends LinearOpMode
         robot.depositNeutral();
         robot.rightRampUp();
         robot.leftRampUp();
+        robot.openIntake();
+        robot.intakeStart();
 
         Hardware.currentOpMode=this;
         //robot.startIntakeThread();
@@ -55,10 +62,24 @@ public class Teleop extends LinearOpMode
         while (opModeIsActive())
         {
 
-            robot.updateInchesMoved();
+            if(gamepad2.right_trigger>.4)
+            {
+                robot.depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+            robot.updatePositionRoadRunner();
 
-            robot.intake();
             robot.deposit();
+
+            //Controller 1 TSE modes with left bumper being driving mode and right bumper to TSE mode
+            if (gamepad1.left_bumper)
+            {
+                tseMode = false;
+            }else if(gamepad1.right_bumper)
+            {
+
+                tseMode = true;
+            }
 
             //Slide outtake motor controller set up (linear slides)
             if(gamepad2.right_bumper&&!bumperPressed&&robot.depositLevel<2)
@@ -78,72 +99,132 @@ public class Teleop extends LinearOpMode
             if(gamepad2.y)
             {
                 robot.depositOverride=true;
-                robot.depositSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.depositSlide.setPower(gamepad2.left_stick_y);
+                if(!robot.depositSlide.getMode().equals(DcMotor.RunMode.RUN_WITHOUT_ENCODER))
+                    robot.depositSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                robot.depositSlide.setPower(Math.abs(gamepad2.left_stick_y-.05)>.05?-gamepad2.left_stick_y:.12);
             }
             else
             {
-                robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                if(!robot.depositSlide.getMode().equals(DcMotor.RunMode.RUN_TO_POSITION))
+                    robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.depositOverride = false;
+
             }
+
+            //capper
+            robot.setHorizontalPosition(1 - horizontalPos);
+            robot.setVerticalPosition(verticalPos);
 
             //intake override
             if(gamepad1.y)
             {
                 robot.intakeArmUp();
                 robot.intakeOverride=true;
+
                 if( robot.intakeArm.getMode()!=DcMotor.RunMode.RUN_WITHOUT_ENCODER)
                     robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.intakeArm.setPower(-.5);
+                robot.intakeArm.setPower(-.75);
+                if(robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)
+                {
+                    robot.intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    robot.openIntake();
+                }
+                else
+                    robot.closeIntake();
             }
             else
             {
                 if(robot.intakeArm.getMode()!=DcMotor.RunMode.RUN_TO_POSITION)
                     robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.intakeOverride = false;
+                robot.intake();
             }
 
-            //Move freight into correct deposit side
-            if(gamepad2.dpad_left)
-                robot.depositLeft();
-            else if(gamepad2.dpad_right)
-                robot.depositRight();
-            else if(gamepad2.dpad_up)
-                robot.depositNeutral();
-
-            //Toggle left ramp when x is pressed
-            if (!x2Pressed && gamepad2.x)
+            //controls deposit toggle
+            if(gamepad2.b && !b2pressed && !gamepad2.start)
             {
-                x2Pressed = true;
-                leftRampUp = !leftRampUp;
-            } else if (!gamepad2.x)
-                x2Pressed = false;
+                b2pressed = true;
+                linkedDeposit = !linkedDeposit;
+            }
+            else if(!gamepad2.b)
+            {
+                b2pressed = false;
+            }
 
-            if(leftRampUp)
+            //Move freight into correct deposit side when toggle is off
+            if(!linkedDeposit) {
+                if (gamepad2.dpad_left) {
+
+                    robot.depositLeft();
+                } else if (gamepad2.dpad_right) {
+
+                    robot.depositRight();
+                } else if (gamepad2.dpad_up)
+                    robot.depositNeutral();
+            }
+
+            //linked deposit ramp controls
+            if(linkedDeposit)
+            {
+                if (gamepad2.dpad_left)
+                {
+                    robot.depositLeft();
+                    leftRampUp = false;
+                    rightRampUp=true;
+                }
+                else if (gamepad2.dpad_right)
+                {
+                    leftRampUp = true;
+                    robot.depositRight();
+                    rightRampUp = false;
+                }
+                else if (gamepad2.dpad_up)
+                {
+                    robot.depositNeutral();
+                    leftRampUp = true;
+                    rightRampUp = true;
+                }
+
+
+            }
+
+
+            //unlinked ramp controls
+            if(!linkedDeposit) {
+                //Toggle left ramp when x is pressed
+                if (!x2Pressed && gamepad2.x) {
+                    x2Pressed = true;
+                    leftRampUp = !leftRampUp;
+                } else if (!gamepad2.x)
+                    x2Pressed = false;
+
+
+                //Toggle right ramp when a is pressed
+                if (!a2Pressed && gamepad2.a) {
+
+                    a2Pressed = true;
+                    rightRampUp = !rightRampUp;
+
+                } else if (!gamepad2.a)
+                    a2Pressed = false;
+            }
+
+
+            if (leftRampUp)
                 robot.leftRampUp();
             else
                 robot.leftRampDown();
 
-            //Toggle right ramp when b is pressed
-            if (!a2Pressed&&gamepad2.a) {
-
-                a2Pressed = true;
-                rightRampUp=!rightRampUp;
-
-            }
-            else if (!gamepad2.a)
-                a2Pressed = false;
-
-            if(rightRampUp)
+            if (rightRampUp)
                 robot.rightRampUp();
             else
                 robot.rightRampDown();
 
             //Set intake power
             if(gamepad1.right_trigger>0)
-                robot.setIntakePower(-gamepad1.right_trigger);
+                robot.setIntakePower(gamepad1.right_trigger);
             else
-                robot.setIntakePower(gamepad1.left_trigger);
+                robot.setIntakePower(-gamepad1.left_trigger * .57);
 
             if(gamepad1.b&&!b1Pressed)
             {
@@ -159,22 +240,39 @@ public class Teleop extends LinearOpMode
             if(slowMode)
                 driveSpeed=.4;
 
-            //Set drivetrain power
-            robot.drive(gamepad1.left_stick_y*driveSpeed,gamepad1.left_stick_x*driveSpeed,gamepad1.right_stick_x*driveSpeed);
 
-            //Set duck spinner power
-            if(gamepad2.left_trigger>0)
+            if(!tseMode)
             {
-                robot.setLeftDuckSpinnerPower(gamepad2.left_trigger);
-                robot.setRightDuckSpinnerPower(gamepad2.left_trigger);
+                //Set drivetrain power
+                robot.drive(gamepad1.left_stick_y * driveSpeed, gamepad1.left_stick_x * driveSpeed, gamepad1.right_stick_x * driveSpeed);
+                robot.setOutPower(gamepad2.right_stick_y);
+
+            }
+            else
+            {
+                //capper
+                if(Math.abs(gamepad2.right_stick_y)>.1)
+                    robot.setOutPower(gamepad2.right_stick_y);
+                else
+                    robot.setOutPower(gamepad1.right_stick_y>0||gamepad1.right_stick_button?gamepad1.right_stick_y:gamepad1.right_stick_y*.15);
+
+                horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.48,1);
+                verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.48,1);
+            }
+            robot.setRightDuckSpinnerPower(gamepad2.left_stick_button?-.8*gamepad2.left_trigger:-gamepad2.left_trigger);
+            //Set duck spinner power
+            if(gamepad2.left_trigger>.25)
+            {
+                robot.setLeftDuckSpinnerPower(-1);
+
             }
             else{
-                robot.setRightDuckSpinnerPower(-gamepad2.right_trigger);
-                robot.setLeftDuckSpinnerPower(-gamepad2.right_trigger);
+
+                robot.setLeftDuckSpinnerPower(0);
             }
 
             //Toggle Intake Arm Up & Down when gamepad1.a is pressed
-            if (!a1Pressed && gamepad1.a)
+            if (!a1Pressed && gamepad1.a&&!gamepad1.start)
             {
                 a1Pressed = true;
                 intakeUp = !intakeUp;
@@ -182,29 +280,32 @@ public class Teleop extends LinearOpMode
                 a1Pressed = false;
 
             if(intakeUp)
+            {
                 robot.intakeArmUp();
+                if(robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5)
+                    robot.openIntake();
+
+            }
             else
             {
-                if(robot.intakeArmPosition()>30)
-                    robot.closeIntake();
+                robot.closeIntake();
                 robot.intakeArmDown();
             }
 
-            if(robot.intakeArmPosition()<30)
-                robot.openIntake();
 
 
 
-            telemetry.addData("Intake arm position",robot.intakeArmPosition());
-            telemetry.addData("Deposit position", robot.depositPosition());
-            telemetry.addData("color",robot.colorsensor.red()+" "+robot.colorsensor.green()+" "+robot.colorsensor.blue()+" "+robot.colorsensor.alpha());
+
+            PIDFCoefficients pid = robot.depositSlide.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+            telemetry.addData("Linked Deposit",linkedDeposit);
             telemetry.addData("Slow-mode", slowMode);
             telemetry.addData("override",robot.depositOverride);
             telemetry.addData("deposit level", robot.depositLevel);
-            telemetry.addData("x",robot.x);
-            telemetry.addData("y",robot.y);
-            telemetry.addData("theta",robot.theta);
-            telemetry.addData("time",e.seconds()-lastTime);
+            telemetry.addData("intake pos",robot.intakeArm.getCurrentPosition());
+            telemetry.addData("horiz",horizontalPos);
+            telemetry.addData("vert",verticalPos);
+            telemetry.addData("voltage", robot.intakeSeeperDraw());
+            telemetry.addData("red", robot.intakeColorSensor.red());
             lastTime=e.seconds();
             telemetry.update();
 
