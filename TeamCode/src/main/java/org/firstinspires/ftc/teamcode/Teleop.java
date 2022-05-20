@@ -306,6 +306,11 @@ public class Teleop extends LinearOpMode
             telemetry.addData("vert",verticalPos);
             telemetry.addData("voltage", robot.intakeSeeperDraw());
             telemetry.addData("red", robot.intakeColorSensor.red());
+            telemetry.addData("PID", robot.intakeArm.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
+            //telemetry.addData("front left", robot.frontLeft.getCurrentPosition());
+            //telemetry.addData("front right", robot.frontRight.getCurrentPosition());
+            //telemetry.addData("back left", robot.backLeft.getCurrentPosition());
+            //telemetry.addData("back right", robot.backRight.getCurrentPosition());
             lastTime=e.seconds();
             telemetry.update();
 

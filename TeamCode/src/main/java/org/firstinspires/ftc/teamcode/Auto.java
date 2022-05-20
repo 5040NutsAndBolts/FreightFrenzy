@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 //end of test
 
-@Disabled
+//@Disabled
 @Autonomous(name="Auto",group="Auto")
 public class Auto extends LinearOpMode
 {

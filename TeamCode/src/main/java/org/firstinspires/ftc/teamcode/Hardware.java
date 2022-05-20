@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -46,7 +47,7 @@ public class Hardware
     public DcMotorEx frontRight;
     public DcMotorEx backRight;
 
-    public DcMotor intakeArm;
+    public DcMotorEx intakeArm;
     private DcMotorEx intakeSweeper;
     public RevColorSensorV3 colorsensor;
 
@@ -79,7 +80,7 @@ public class Hardware
     public RevBulkData bulkData;
     public ExpansionHubEx expansionHub;
 
-    private static DcMotor staticIntake;
+    private static DcMotorEx staticIntake;
     private static DcMotorEx staticDeposit;
 
     public double x=0;
@@ -140,7 +141,7 @@ public class Hardware
         if(staticIntake!=null)
             intakeArm=staticIntake;
         {
-            intakeArm = hardwareMap.dcMotor.get("Intake Arm");
+            intakeArm = hardwareMap.get(DcMotorEx.class,"Intake Arm");
             staticIntake = intakeArm;
         }
         intakeBlocker = hardwareMap.servo.get("Intake Blocker");
@@ -149,6 +150,7 @@ public class Hardware
         intakeArm.setPower(0);
         intakeArm.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         //intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         //Color sensor for intake to sense if something is in the intake
         colorsensor = hardwareMap.get(RevColorSensorV3.class,"Intake Color Sensor");
@@ -249,8 +251,8 @@ public class Hardware
     }*/
 
     //Deposit ramp positions
-    public void leftRampUp(){leftRamp.setPosition(.1);}
-    public void leftRampDown(){leftRamp.setPosition(.47);}
+    public void leftRampUp(){leftRamp.setPosition(.3);}
+    public void leftRampDown(){leftRamp.setPosition(.6);}
     public void rightRampUp(){rightRamp.setPosition(.96);}
     public void rightRampDown(){rightRamp.setPosition(.4);}
 
@@ -355,7 +357,7 @@ public class Hardware
                 else
                 {
                     intakeArm.setTargetPosition(-45);
-                    intakeArm.setPower(1);
+                    intakeArm.setPower(2);
                 }
 
             } else
