@@ -267,7 +267,6 @@ public class Hardware
     public void deposit()
     {
 
-
         if(!depositOverride)
         {
 
