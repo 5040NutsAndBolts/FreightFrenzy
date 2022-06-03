@@ -44,6 +44,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Scanner;
 
+import org.firstinspires.ftc.teamcode.AutoMethods;
+
 
 @Autonomous(name = "remoteAuto", group = "Auto")
 public class remoteAuto extends LinearOpMode {
@@ -118,6 +120,9 @@ public class remoteAuto extends LinearOpMode {
 
         boolean setMode=true;
 
+        telemetry.addData("distance moved", distanceMoved);
+        telemetry.update();
+
         //drives towards hub to deposit preload
         while (opModeIsActive() && distanceMoved < 786.25+towardsHub)
         {
@@ -158,10 +163,7 @@ public class remoteAuto extends LinearOpMode {
             Hardware.currentOpMode.telemetry.update();
         } //end of drive to hub while loop
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         ElapsedTime waitAtHub = new ElapsedTime();
@@ -216,10 +218,7 @@ public class remoteAuto extends LinearOpMode {
         ElapsedTime rotate = new ElapsedTime();
         rotate.startTime();
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //drive into warehouse to grab freight
@@ -325,10 +324,7 @@ public class remoteAuto extends LinearOpMode {
             telemetry.update();
         } //end of fully in warehouse while loop
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //leaves warehouse I think
@@ -385,10 +381,7 @@ public class remoteAuto extends LinearOpMode {
         robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
         robot.updatePositionRoadRunner();
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //Drive back to hub to cycle first freight
@@ -440,10 +433,7 @@ public class remoteAuto extends LinearOpMode {
             ElapsedTime proportionalSpeedIntoWall = new ElapsedTime();
             proportionalSpeedIntoWall.startTime();
 
-            robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            AutoMethods.resetEncoders(robot);
             distanceMoved = 0;
 
             //Drive back to wall
@@ -479,10 +469,7 @@ public class remoteAuto extends LinearOpMode {
                 robot.updatePositionRoadRunner();
             }
 
-            robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            AutoMethods.resetEncoders(robot);
             distanceMoved = 0;
 
             robot.updatePositionRoadRunner();
@@ -694,10 +681,7 @@ public class remoteAuto extends LinearOpMode {
             robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
             robot.updatePositionRoadRunner();
 
-            robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            AutoMethods.resetEncoders(robot);
             distanceMoved = 0;
 
             //Drive back to hub to score freight
@@ -749,10 +733,7 @@ public class remoteAuto extends LinearOpMode {
 
         }
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //Final Park
@@ -805,10 +786,7 @@ public class remoteAuto extends LinearOpMode {
         timer.reset();
         boolean up=false;
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //drive to warehouse for final park

@@ -44,8 +44,10 @@ import java.io.File;
 import java.util.List;
 import java.util.Scanner;
 
+import org.firstinspires.ftc.teamcode.AutoMethods;
 
-@Autonomous(name = "RedCycleAuto", group = "Auto")
+
+@Autonomous(name = "RedDuckAuto", group = "Auto")
 public class RedDuckAuto extends LinearOpMode
 {
     //about 42.5 ticks per inch
@@ -120,6 +122,9 @@ public class RedDuckAuto extends LinearOpMode
 
         boolean setMode = true;
 
+        telemetry.addData("distance moved", distanceMoved);
+        telemetry.update();
+
         //strafe towards center
         while(opModeIsActive() && distanceMoved < 212.5)
         {
@@ -127,10 +132,7 @@ public class RedDuckAuto extends LinearOpMode
             robot.drive(0, .5, 0);
         }
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //drive to duck wheel
@@ -146,10 +148,7 @@ public class RedDuckAuto extends LinearOpMode
             robot.setLeftDuckSpinnerPower(.7);
         }
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //park in storage unit

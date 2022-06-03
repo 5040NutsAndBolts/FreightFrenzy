@@ -44,6 +44,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Scanner;
 
+import org.firstinspires.ftc.teamcode.AutoMethods;
+
 
 @Autonomous(name = "RedCycleAuto", group = "Auto")
 public class RedCycleAuto extends LinearOpMode
@@ -124,6 +126,9 @@ public class RedCycleAuto extends LinearOpMode
 
         robot.depositLevel = auto - 1;
 
+        telemetry.addData("distance moved", distanceMoved);
+        telemetry.update();
+
         //drive to hub
         while(opModeIsActive() && distanceMoved < 786.25)
         {
@@ -146,10 +151,7 @@ public class RedCycleAuto extends LinearOpMode
             robot.drive(0, -.6, 0);
         }
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //drives into warehouse and intakes
@@ -178,10 +180,7 @@ public class RedCycleAuto extends LinearOpMode
             robot.drive(-.8, 0, 0);
         }
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //drive to hub to score freight
@@ -210,10 +209,7 @@ public class RedCycleAuto extends LinearOpMode
         //subsequent cycles
         for(int i = 0; i < 3 && totalAutoTime.seconds() < 23.8; i++)
         {
-            robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            AutoMethods.resetEncoders(robot);
             distanceMoved = 0;
 
             //drives to warehouse
@@ -242,10 +238,7 @@ public class RedCycleAuto extends LinearOpMode
                 robot.drive(-.8, 0, 0);
             }
 
-            robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            AutoMethods.resetEncoders(robot);
             distanceMoved = 0;
 
             //drive to hub
@@ -272,10 +265,7 @@ public class RedCycleAuto extends LinearOpMode
 
         } //end of subsequent cycles for loop
 
-        robot.frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //drives to warehouse to park
