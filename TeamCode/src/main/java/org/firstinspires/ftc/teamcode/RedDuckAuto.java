@@ -126,36 +126,61 @@ public class RedDuckAuto extends LinearOpMode
         telemetry.update();
 
         //strafe towards center
-        while(opModeIsActive() && distanceMoved < 212.5)
+        while(opModeIsActive() && distanceMoved < 210)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.backLeft.getCurrentPosition()) / 2;
             robot.drive(0, .5, 0);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
         }
 
         AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //drive to duck wheel
-        while(opModeIsActive() && distanceMoved < 2550)
+        while(opModeIsActive() && distanceMoved < -930)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(.7, 0, 0);
+            robot.drive(-.6, 0, 0);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
         }
 
         //spin duck
-        while(opModeIsActive() && totalAutoTime.seconds() < 15)
+        while(opModeIsActive() && totalAutoTime.seconds() < 4)
         {
+            robot.drive(0,0,0);
             robot.setLeftDuckSpinnerPower(.7);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
         }
 
+        robot.setLeftDuckSpinnerPower(0);
         AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //park in storage unit
-        while(opModeIsActive() && distanceMoved < 850)
+        while(opModeIsActive() && distanceMoved < 1250)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.backLeft.getCurrentPosition()) / 2;
             robot.drive(0, .5, 0);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
+        }
+
+        //drive against wall
+        while(opModeIsActive() && totalAutoTime.seconds() < 6.5)
+        {
+            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+            robot.drive(-.2, 0, 0);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.addData("seconds", totalAutoTime.seconds());
+            telemetry.update();
         }
 
         robot.drive(0,0,0);

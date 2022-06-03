@@ -121,7 +121,7 @@ public class BlueDuckAuto extends LinearOpMode
 
         boolean setMode = true;
 
-        //strafe towards center 212.5
+        //strafe towards center
         while(opModeIsActive() && distanceMoved < 210)
         {
             distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
