@@ -293,24 +293,29 @@ public class Teleop extends LinearOpMode
             }
 
 
-
-
-
+            int distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
             PIDFCoefficients pid = robot.depositSlide.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
             telemetry.addData("Linked Deposit",linkedDeposit);
-            telemetry.addData("Slow-mode", slowMode);
-            telemetry.addData("override",robot.depositOverride);
-            telemetry.addData("deposit level", robot.depositLevel);
-            telemetry.addData("intake pos",robot.intakeArm.getCurrentPosition());
-            telemetry.addData("horiz",horizontalPos);
-            telemetry.addData("vert",verticalPos);
-            telemetry.addData("voltage", robot.intakeSeeperDraw());
-            telemetry.addData("red", robot.intakeColorSensor.red());
-            telemetry.addData("PID", robot.intakeArm.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
+            telemetry.addData("Deposit Override",robot.depositOverride);
+            telemetry.addData("Deposit Level", robot.depositLevel);
+            telemetry.addLine();
+            telemetry.addData("Slow-Mode", slowMode);
+            telemetry.addData("TSE Mode", tseMode);
+            telemetry.addLine();
+            telemetry.addData("Distance Moved", distanceMoved);
             telemetry.addData("front left", robot.frontLeft.getCurrentPosition());
             telemetry.addData("front right", robot.frontRight.getCurrentPosition());
             telemetry.addData("back left", robot.backLeft.getCurrentPosition());
             telemetry.addData("back right", robot.backRight.getCurrentPosition());
+            telemetry.addData("red", robot.intakeColorSensor.red());
+
+            //telemetry.addData("intake position", robot.intakeArm.getCurrentPosition());
+
+            //telemetry.addData("Intake Pos",robot.intakeArm.getCurrentPosition());
+            //telemetry.addData("horiz",horizontalPos);
+            //telemetry.addData("vert",verticalPos);
+            //telemetry.addData("voltage", robot.intakeSeeperDraw());
+            //telemetry.addData("PID", robot.intakeArm.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
             lastTime=e.seconds();
             telemetry.update();
 

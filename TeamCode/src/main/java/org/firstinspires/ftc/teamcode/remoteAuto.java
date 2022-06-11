@@ -61,7 +61,7 @@ public class remoteAuto extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Right Webcam"), cameraMonitorViewId);
 
         webcam.setPipeline(new TSEFinder());
         webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
@@ -116,7 +116,7 @@ public class remoteAuto extends LinearOpMode {
         robot.intakeArmUp();
         robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //moves the robot closer to hub in auto 3
-        double towardsHub=auto==3?53:0;
+        double towardsHub=auto==3?-53:0;
 
         boolean setMode=true;
 
@@ -124,13 +124,13 @@ public class remoteAuto extends LinearOpMode {
         telemetry.update();
 
         //drives towards hub to deposit preload
-        while (opModeIsActive() && distanceMoved < 786.25+towardsHub)
+        while (opModeIsActive() && distanceMoved > -786.25+towardsHub)
         {
             distanceMoved = (robot.backRight.getCurrentPosition()  + robot.frontLeft.getCurrentPosition()) / 2;
-            if(distanceMoved < 510)
+            if(distanceMoved > -510)
             {
                 robot.depositLevel = auto==3?2:1;
-                if(distanceMoved > 382.5)
+                if(distanceMoved < -382.5)
                 {
                     robot.closeIntake();
                     if(setMode)
@@ -152,9 +152,9 @@ public class remoteAuto extends LinearOpMode {
             robot.updatePositionRoadRunner();
             PathFollowers.linearTolerancePathFollow(robot, -.05, 1.7-robot.x/14.7-(auto==1?.2:0), 3 * Math.PI / 2, .9, .05, 0.2, .15, 3 * Math.PI / 2, new Point(0, 0));
 
-            if (distanceMoved > 187)
+            if (distanceMoved < -187)
                 robot.rightRampDown();
-            if (distanceMoved > 365.5)
+            if (distanceMoved < -365.5)
                 robot.depositRight();
 
             Hardware.currentOpMode.telemetry.addData("x", robot.x);
@@ -224,10 +224,10 @@ public class remoteAuto extends LinearOpMode {
         //drive into warehouse to grab freight
         while(opModeIsActive() &&
                 distanceMoved < 3230 &&
-                (distanceMoved < 1700 || timer.seconds() < .07 || robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5) &&
+                (distanceMoved < 1700 || timer.seconds() < .07 || robot.colorsensor.getDistance(DistanceUnit.INCH) < 1.5) &&
                 (distanceMoved < 1700 || (robot.intakeSeeperDraw() < 4.6 &&
-                        robot.intakeColorSensor.red()<ambientIntakeColor+20) || robot.colorsensor.getDistance(DistanceUnit.INCH)<1.5) &&
-                timer.seconds()<1)
+                        robot.intakeColorSensor.red() < ambientIntakeColor+20) || robot.colorsensor.getDistance(DistanceUnit.INCH) < 1.5) &&
+                timer.seconds() < 1)
         {
             distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.frontRight.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) /4;
 
@@ -294,7 +294,8 @@ public class remoteAuto extends LinearOpMode {
 
             //raise intake arm
             robot.intakeArmUp();
-            if (robot.intakeArm.getCurrentPosition() < 10||timeStarted) {
+            if (robot.intakeArm.getCurrentPosition() < 10||timeStarted)
+            {
 
                 if(!timeStarted)
                 {

@@ -334,8 +334,6 @@ public class Hardware
 
     public void intake()
     {
-
-
         if(!intakeOverride)
         {
             if ((intakeUp))

@@ -63,7 +63,7 @@ public class BlueCycleAuto extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Right Webcam"), cameraMonitorViewId);
 
         webcam.setPipeline(new TSEFinder());
         webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
@@ -117,67 +117,135 @@ public class BlueCycleAuto extends LinearOpMode
         ElapsedTime totalAutoTime = new ElapsedTime();
         totalAutoTime.startTime();
         //Open CV goes here to spit out 1, 2, or 3
-        //moves robot to shipping hub
 
         robot.intakeArmUp();
         robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         boolean setMode = true;
+        boolean hitLine = false;
 
         robot.depositLevel = auto - 1;
 
         telemetry.addData("distance moved", distanceMoved);
         telemetry.update();
 
-        //drive to hub
-        while(opModeIsActive() && distanceMoved < 786.25)
+        //drive backwards to center wall
+        while(opModeIsActive() && distanceMoved < 850)
         {
-            distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, .6, 0);
+            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+            robot.drive(.6, 0,0);
 
-            if(distanceMoved < 510)
-                robot.deposit();
-
-            if (distanceMoved > 187)
-                robot.leftRampDown();
-            if (distanceMoved > 365.5)
-                robot.depositLeft();
-        }
-
-        //drives back to wall
-        while(opModeIsActive() && distanceMoved > 10)
-        {
-            distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, -.6, 0);
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
         }
 
         AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
-        //drives into warehouse and intakes
-        while(opModeIsActive() && distanceMoved < 3060)
+        //drive to hub
+        while(opModeIsActive() && distanceMoved > -925)
+        {
+            distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+            robot.drive(0, .5, 0);
+
+            if(distanceMoved < -300)
+                robot.deposit();
+
+            if (distanceMoved < -500)
+                robot.rightRampDown();
+            if (distanceMoved < -600)
+                robot.depositRight();
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
+        }
+
+        //drives back to wall
+        while(opModeIsActive() && distanceMoved < 0)
+        {
+            distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+            robot.drive(0, -.6, 0);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
+        }
+
+        colors[2] = robot.lineColorSensor.alpha();
+
+        Arrays.sort(colors);
+        int lineValue= (int) Math.round((double)colors[1]*1.1);
+
+        AutoMethods.resetEncoders(robot);
+        distanceMoved = 0;
+
+        robot.depositLevel = 0;
+        robot.deposit();
+        robot.depositNeutral();
+        robot.rightRampUp();
+
+        //drives into warehouse and intakes 1
+        while(opModeIsActive() && distanceMoved > -3100)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(.8, 0, 0);
+            robot.drive(-.4, -.1, 0);
 
-            if(distanceMoved > 2040)
+            robot.intakeArmDown();
+            robot.closeIntake();
+            //robot.intake();
+
+            if(distanceMoved < -1200)
             {
-                robot.setIntakePower(.89);
+                robot.setIntakePower(1);
             }
 
             if(robot.intakeSeeperDraw() >= 4.5)
-            {
-                robot.setIntakePower(0);
-                robot.intake();
                 break;
-            }
+            if(robot.intakeColorSensor.red() > ambientIntakeColor + 40)
+                break;
+            //if(robot.colorsensor.getDistance(DistanceUnit.INCH) > 1.5)
+                //break;
+
+
+            telemetry.addData("distance moved", distanceMoved);
+            //telemetry.addData("intake draw", robot.intakeSeeperDraw());
+            //telemetry.addLine("intaking");
+            telemetry.update();
         }
 
-        //drives back to center wall
-        while(opModeIsActive() && distanceMoved > 0)
+        //.robot.setIntakePower(.7);
+
+        ElapsedTime t = new ElapsedTime();
+
+        //drives from warehouse to center wall
+        while(opModeIsActive() && distanceMoved < -400)
         {
+            t.startTime();
+            robot.intakeArmUp();
+            while(t.seconds() < .8)
+            {
+                robot.intakeArm.setPower(-.7);
+
+                if(t.seconds() > .6)
+                    robot.openIntake();
+            }
+
+            robot.intakeArm.setPower(0);
+            robot.setIntakePower(.5);
+
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(-.8, 0, 0);
+            robot.drive(.6, -.3, 0);
+
+            if(robot.lineColorSensor.alpha() > lineValue * .99 && !hitLine)
+            {
+                hitLine=true;
+                distanceMoved = -1850;
+            }
+            else
+                hitLine = false;
+
+            telemetry.addData("distance moved", distanceMoved);
+            //telemetry.addLine("leaving warehouse");
+            telemetry.update();
         }
 
         AutoMethods.resetEncoders(robot);
@@ -185,25 +253,33 @@ public class BlueCycleAuto extends LinearOpMode
 
         //drive to hub to score freight
         robot.depositLevel = 3;
-        while(opModeIsActive() && distanceMoved < 786.25)
+        while(opModeIsActive() && distanceMoved > -950)
         {
+            robot.setIntakePower(0);
+
             distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, .6, 0);
+            robot.drive(0, .35, 0);
 
-            if(distanceMoved < 510)
-                robot.deposit();
+            if(distanceMoved < -300)
+            robot.deposit();
 
-            if (distanceMoved > 187)
-                robot.leftRampDown();
-            if (distanceMoved > 365.5)
-                robot.depositLeft();
+            if (distanceMoved < -700)
+                robot.rightRampDown();
+            if (distanceMoved < -850)
+                robot.depositRight();
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
         }
 
         //drives back to wall
-        while(opModeIsActive() && distanceMoved > 10)
+        while(opModeIsActive() && distanceMoved < -10)
         {
             distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
             robot.drive(0, -.6, 0);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
         }
 
         //subsequent cycles
@@ -212,55 +288,115 @@ public class BlueCycleAuto extends LinearOpMode
             AutoMethods.resetEncoders(robot);
             distanceMoved = 0;
 
-            //drives to warehouse
-            while(opModeIsActive() && distanceMoved < 3060)
-            {
-                distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-                robot.drive(.8, 0, 0);
+            robot.depositLevel = 0;
+            robot.deposit();
+            robot.depositNeutral();
+            robot.rightRampUp();
 
-                if(distanceMoved > 2040)
+            //drives into warehouse 2+
+            while(opModeIsActive() && distanceMoved > -3200)
+            {
+                robot.intakeArmDown();
+                robot.closeIntake();
+
+                distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+                robot.drive(-.5, -.1, 0);
+
+                if(distanceMoved < -1200)
                 {
-                    robot.setIntakePower(.89);
+                    robot.setIntakePower(1);
                 }
+
+                if(robot.lineColorSensor.alpha() > lineValue * .99 && !hitLine)
+                {
+                    hitLine=true;
+                    distanceMoved = -1850;
+                }
+                else
+                    hitLine = false;
 
                 if(robot.intakeSeeperDraw() >= 4.5)
                 {
-                    robot.setIntakePower(0);
-                    robot.intake();
+                    //wait(100);
                     break;
                 }
+                if(robot.intakeColorSensor.red() > ambientIntakeColor + 40)
+                {
+                    //wait(100);
+                    break;
+                }
+
+                telemetry.addData("distance moved", distanceMoved);
+                telemetry.addData("red", robot.intakeColorSensor.red());
+                telemetry.addData("draw", robot.intakeSeeperDraw());
+                telemetry.update();
             }
 
-            //drives back to center wall
-            while(opModeIsActive() && distanceMoved > 0)
+            robot.depositLevel = 2;
+
+            //goes from warehouse to center wall
+            while(opModeIsActive() && distanceMoved < -700)
             {
+                t.reset();
+                t.startTime();
+                robot.intakeArmUp();
+                while(t.seconds() < .8)
+                {
+                    robot.intakeArm.setPower(-.7);
+
+                    if(t.seconds() > .5)
+                        robot.openIntake();
+                }
+
+                robot.intakeArm.setPower(0);
+                robot.setIntakePower(.5);
+
                 distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-                robot.drive(-.8, 0, 0);
+                robot.drive(.5, -.3, 0);
+
+                if(robot.lineColorSensor.alpha() > lineValue * .99 && !hitLine)
+                {
+                    hitLine=true;
+                    distanceMoved = -1850;
+                }
+                else
+                    hitLine = false;
+
+                telemetry.addData("distance moved", distanceMoved);
+                telemetry.update();
             }
 
             AutoMethods.resetEncoders(robot);
             distanceMoved = 0;
 
             //drive to hub
-            while(opModeIsActive() && distanceMoved < 786.25)
+            while(opModeIsActive() && distanceMoved > -1100)
             {
-                distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-                robot.drive(0, .6, 0);
+                robot.setIntakePower(0);
 
-                if(distanceMoved < 510)
+                distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+                robot.drive(0, .35, 0);
+
+                if(distanceMoved < -300)
                     robot.deposit();
 
-                if (distanceMoved > 187)
-                    robot.leftRampDown();
-                if (distanceMoved > 365.5)
-                    robot.depositLeft();
+                if (distanceMoved < -700)
+                    robot.rightRampDown();
+                if (distanceMoved < -1000)
+                    robot.depositRight();
+
+                telemetry.addData("distance moved", distanceMoved);
+                telemetry.update();
             }
 
             //drives back to wall
-            while(opModeIsActive() && distanceMoved > 10)
+            while(opModeIsActive() && distanceMoved < 10)
             {
                 distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
                 robot.drive(0, -.6, 0);
+
+                telemetry.addData("distance moved", distanceMoved);
+                telemetry.update();
             }
 
         } //end of subsequent cycles for loop
@@ -269,10 +405,18 @@ public class BlueCycleAuto extends LinearOpMode
         distanceMoved = 0;
 
         //drives to warehouse to park
-        while(opModeIsActive() && distanceMoved < 2500)
+        while(opModeIsActive() && distanceMoved > -2500)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(.8, 0, 0);
+            robot.drive(-.8, -.2, 0);
+
+            robot.depositLevel = 0;
+            robot.deposit();
+            robot.rightRampUp();
+            robot.depositNeutral();
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
         }
 
         robot.drive(0,0,0);
