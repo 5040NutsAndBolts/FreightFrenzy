@@ -293,7 +293,7 @@ public class remoteAuto extends LinearOpMode {
             robot.drive(-.3, -.4+HelperMethods.clamp(0,slowStrafe.seconds()/1.5,.2), 0);
 
             //raise intake arm
-            robot.intakeArmUp();
+            t.startTime();robot.intakeArmUp();
             if (robot.intakeArm.getCurrentPosition() < 10||timeStarted)
             {
 

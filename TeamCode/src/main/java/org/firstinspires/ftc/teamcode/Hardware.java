@@ -330,7 +330,7 @@ public class Hardware
 
 
     //lower level = 180, middle level = 1300
-    boolean resetEncoder = true;
+     public boolean resetEncoder = true;
 
     public void intake()
     {
@@ -339,14 +339,15 @@ public class Hardware
             if ((intakeUp))
             {
 
-                if (colorsensor.getDistance(DistanceUnit.INCH)<1.5&&!resetEncoder)
+                if (colorsensor.getDistance(DistanceUnit.INCH) < 1.5 && !resetEncoder)
                 {
                     intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
                     intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     resetEncoder = true;
 
-                } else if(resetEncoder)
+                }
+                else if(resetEncoder)
                 {
                     intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     intakeArm.setPower(0);
@@ -357,7 +358,8 @@ public class Hardware
                     intakeArm.setPower(2);
                 }
 
-            } else
+            }
+            else
             {
                 resetEncoder = false;
                 if (intakeArm.getCurrentPosition() > 230)
@@ -365,7 +367,8 @@ public class Hardware
                     intakeArm.setPower(0);
                     if(intakeArm.getZeroPowerBehavior()!=DcMotor.ZeroPowerBehavior.BRAKE)
                         intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                } else
+                }
+                else
                 {
                     if(colorsensor.getDistance(DistanceUnit.INCH)>1.5)
                     {
