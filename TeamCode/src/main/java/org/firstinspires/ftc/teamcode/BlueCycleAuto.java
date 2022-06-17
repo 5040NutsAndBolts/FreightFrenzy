@@ -98,9 +98,9 @@ public class BlueCycleAuto extends LinearOpMode
         while (!isStopRequested() & !isStarted())
         {
 
-            if (TSEFinder.screenPosition.x < 115)
+            if (TSEFinder.screenPosition.x < 50)
                 auto = 1;
-            else if (TSEFinder.screenPosition.x < 215)
+            else if (TSEFinder.screenPosition.x < 150)
                 auto = 2;
             else
                 auto = 3;
@@ -130,10 +130,11 @@ public class BlueCycleAuto extends LinearOpMode
         telemetry.update();
 
         //drive backwards to center wall
-        while(opModeIsActive() && distanceMoved < 850)
+        while(opModeIsActive() && distanceMoved < 800)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(.6, 0,0);
+            robot.drive(1, 0,0);
+            robot.deposit();
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();
@@ -143,15 +144,13 @@ public class BlueCycleAuto extends LinearOpMode
         distanceMoved = 0;
 
         //drive to hub
-        while(opModeIsActive() && distanceMoved > -925)
+        while(opModeIsActive() && distanceMoved > (-950+(auto==1?0:-150)))
         {
             distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, .5, 0);
+            robot.drive(0, .7+distanceMoved/2500, 0);
+            robot.deposit();
 
-            if(distanceMoved < -300)
-                robot.deposit();
-
-            if (distanceMoved < -500)
+            if (distanceMoved < -400)
                 robot.rightRampDown();
             if (distanceMoved < -600)
                 robot.depositRight();
@@ -161,10 +160,10 @@ public class BlueCycleAuto extends LinearOpMode
         }
 
         //drives back to wall
-        while(opModeIsActive() && distanceMoved < 0)
+        while(opModeIsActive() && distanceMoved < -10)
         {
             distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, -.6, 0);
+            robot.drive(0, -.8, 0);
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();
@@ -183,11 +182,29 @@ public class BlueCycleAuto extends LinearOpMode
         robot.depositNeutral();
         robot.rightRampUp();
 
+        ElapsedTime intakeTimer = new ElapsedTime();
+        intakeTimer.startTime();
+        ElapsedTime curveTimer = new ElapsedTime();
+        curveTimer.startTime();
+        boolean color = false;
+        boolean draw = false;
         //drives into warehouse and intakes 1
-        while(opModeIsActive() && distanceMoved > -3200)
+        while(opModeIsActive() && distanceMoved > -3450&&curveTimer.seconds()<5)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(-.4, -.1, 0);
+
+            double curve=curveTimer.seconds()>1.6?.13:0;
+            if(curveTimer.seconds()>3.5)
+                curve=-.15;
+            else if(curveTimer.seconds()>2.5)
+                curve=.18;
+
+            if(distanceMoved<-1400)
+                robot.drive(-.2, 0, curve);
+            else if(distanceMoved<-900)
+                robot.drive(-1-distanceMoved/2000,-.1,0);
+            else
+                robot.drive(-.7, -.1, 0);
 
             robot.intakeArmDown();
             robot.closeIntake();
@@ -196,12 +213,19 @@ public class BlueCycleAuto extends LinearOpMode
             if(distanceMoved < -1200)
             {
                 robot.setIntakePower(1);
+                robot.intake();
             }
 
-            if(robot.intakeSeeperDraw() >= 4.5)
+            if(robot.intakeSeeperDraw() < 4.9)
+                intakeTimer.reset();
+            else if(intakeTimer.seconds()>.1) {
+                draw=true;
                 break;
-            if(robot.intakeColorSensor.red() > ambientIntakeColor + 40)
+            }
+            if(robot.intakeColorSensor.red() > ambientIntakeColor + 50) {
+                color = true;
                 break;
+            }
             //if(robot.colorsensor.getDistance(DistanceUnit.INCH) > 1.5)
                 //break;
 
@@ -219,8 +243,13 @@ public class BlueCycleAuto extends LinearOpMode
         robot.resetEncoder=false;
         boolean intakeUp = false;
 
+        double distanceMovedModifier=0;
+
+        double finalCurveTime= curveTimer.seconds();
+        ElapsedTime curveBack = new ElapsedTime();
+
         //drives from warehouse to center wall
-        while(opModeIsActive() && distanceMoved < -400)
+        while(opModeIsActive() && distanceMoved < -600)
         {
             robot.intakeArmUp();
             robot.intake();
@@ -234,33 +263,32 @@ public class BlueCycleAuto extends LinearOpMode
 
             if(intakeUp)
                 robot.intakeArm.setPower(-.7);
-            if(intakeUp && t.seconds() > .7)
-                robot.openIntake();
-            if(intakeUp && t.seconds() > 1.2)
-                robot.intakeArm.setPower(0);
+            if(intakeUp && t.seconds() > .05)
+            {
+                robot.reallyOpenIntake();
+                robot.setIntakePower(0);
+            }
+            else
+                robot.setIntakePower(.7);
 
-            robot.setIntakePower(.5);
+            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4+distanceMovedModifier;
+            double curve=0;
+            if(finalCurveTime-curveBack.seconds()>0)
+                curve=-.1;
+            robot.drive(.7, -.3, curve);
 
-            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(.5, -.3, 0);
-
-            if(robot.lineColorSensor.alpha() > lineValue * .99 && !hitLine)
+            if(robot.lineColorSensor.alpha() > lineValue * .985 && !hitLine)
             {
                 hitLine=true;
-                distanceMoved = -1850;
+                distanceMovedModifier=-distanceMoved-1850;
             }
             else
                 hitLine = false;
 
-            telemetry.addData("distance moved", distanceMoved);
-            telemetry.addData("intake position", robot.intakeArm.getCurrentPosition());
-            telemetry.addData("seconds", t.seconds());
-            telemetry.addData("intake up", intakeUp);
-            telemetry.addData("intake target position", robot.intakeArm.getTargetPosition());
-            telemetry.addData("intake power", robot.intakeArm.getPower());
-            telemetry.addData("intake mode", robot.intakeArm.getMode());
-            telemetry.addData("color distance", robot.intakeColorSensor.getDistance(DistanceUnit.INCH));
+            if(finalCurveTime-curveBack.seconds()>0)
 
+
+            telemetry.addData("hit line", hitLine);
             telemetry.update();
         }
 
@@ -273,10 +301,11 @@ public class BlueCycleAuto extends LinearOpMode
 
         //drive to hub to score freight
         robot.depositLevel = 3;
-        while(opModeIsActive() && distanceMoved > -950)
+        while(opModeIsActive() && distanceMoved > -1250)
         {
+            robot.setIntakePower(1);
             distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, .35, 0);
+            robot.drive(0, .6+distanceMoved/3600, 0);
 
             if(distanceMoved < -300)
             {
@@ -284,21 +313,27 @@ public class BlueCycleAuto extends LinearOpMode
                 robot.setIntakePower(0);
             }
 
-            if (distanceMoved < -700)
+            if (distanceMoved < -800)
                 robot.rightRampDown();
-            if (distanceMoved < -850)
+            if (distanceMoved < -950)
                 robot.depositRight();
 
-            telemetry.addData("distance moved", distanceMoved);
+            telemetry.addData("hit line", hitLine);
             telemetry.update();
         }
 
         //drives back to wall
-        while(opModeIsActive() && distanceMoved < -10)
+        while(opModeIsActive() && distanceMoved < 200)
         {
             distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, -.6, 0);
+            robot.drive(0, -.65, 0);
+            robot.setIntakePower(-.5);
 
+            if(distanceMoved>-50)
+            {
+                robot.depositLevel=0;
+                robot.deposit();
+            }
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();
         }
@@ -316,35 +351,51 @@ public class BlueCycleAuto extends LinearOpMode
             robot.setIntakePower(0);
 
             //drives into warehouse 2+
-            while(opModeIsActive() && distanceMoved > -3200)
+            color=false;
+            draw=false;
+            distanceMovedModifier=0;
+            curveTimer.reset();
+            while(opModeIsActive() && distanceMoved > -3550&&curveTimer.seconds()<5)
             {
                 robot.intakeArmDown();
                 robot.closeIntake();
 
-                distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-                robot.drive(-.5, -.1, 0);
+                distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4+distanceMovedModifier;
+                double curve=curveTimer.seconds()>1.6?.13:0;
+                if(curveTimer.seconds()>3.5)
+                    curve=-.15;
+                else if(curveTimer.seconds()>2.5)
+                    curve=.18;
 
+                if(distanceMoved<-1400)
+                    robot.drive(-.2, 0, curve);
+                else if(distanceMoved<-900)
+                    robot.drive(-1-distanceMoved/2000,-.1,0);
+                else
+                    robot.drive(-.7, -.1, 0);
+
+                if(distanceMoved<-200)
+                    robot.intake();
                 if(distanceMoved < -1200)
-                {
                     robot.setIntakePower(1);
-                }
+
 
                 if(robot.lineColorSensor.alpha() > lineValue * .99 && !hitLine)
                 {
                     hitLine=true;
-                    distanceMoved = -1850;
+                    distanceMovedModifier=-distanceMoved-1850;
                 }
                 else
                     hitLine = false;
 
-                if(robot.intakeSeeperDraw() >= 4.5)
-                {
-                    //wait(100);
-                    break;
+                if(robot.intakeSeeperDraw() < 4.9)
+                    intakeTimer.reset();
+                else if(intakeTimer.seconds()>.1) {
+                    draw=true;
                 }
-                if(robot.intakeColorSensor.red() > ambientIntakeColor + 40)
+                if(robot.intakeColorSensor.red() > ambientIntakeColor + 50)
                 {
-                    //wait(100);
+                    color=true;
                     break;
                 }
 
@@ -357,11 +408,13 @@ public class BlueCycleAuto extends LinearOpMode
             intakeUp = false;
             robot.resetEncoder = false;
             hitLine = false;
-            int addDistance = 0;
+            finalCurveTime=curveTimer.seconds();
+            curveBack.reset();
 
             //goes from warehouse to center wall
-            while(opModeIsActive() && distanceMoved < -500 + addDistance)
+            while(opModeIsActive() && distanceMoved < -600 )
             {
+
                 robot.intakeArmUp();
                 robot.intake();
                 if(robot.intakeArm.getCurrentPosition() < 10 && !intakeUp)
@@ -373,73 +426,88 @@ public class BlueCycleAuto extends LinearOpMode
                 }
 
                 if(intakeUp)
-                    robot.intakeArm.setPower(-.7);
-                if(intakeUp && t.seconds() > .7)
-                    robot.openIntake();
-                if(intakeUp && t.seconds() > 1.2)
-                    robot.intakeArm.setPower(0);
+                    robot.intakeArm.setPower(-.8);
+                if(intakeUp && t.seconds() > .05)
+                {
+                    robot.reallyOpenIntake();
+                    robot.setIntakePower(0);
+                }
+                else
+                    robot.setIntakePower(.7);
+
+
 
                 distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-                robot.drive(.5, -.3, 0);
+                double curve=0;
+                if(finalCurveTime-curveBack.seconds()>0)
+                    curve=-.1;
+                robot.drive(.7, -.3, curve);
 
-                if(robot.lineColorSensor.alpha() > lineValue * .99 && !hitLine)
+                if(robot.lineColorSensor.alpha() > lineValue * .985 && !hitLine)
                 {
                     hitLine=true;
                     distanceMoved = -1850;
                 }
 
-                if(!hitLine)
-                {
-                    addDistance = -200;
-                }
 
-                telemetry.addData("distance moved", distanceMoved);
-                telemetry.addData("hit line?", hitLine);
+
+                telemetry.addData("hit line", hitLine);
                 telemetry.update();
             }
 
             AutoMethods.resetEncoders(robot);
             distanceMoved = 0;
+            robot.reallyOpenIntake();
 
             //drive to hub
-            while(opModeIsActive() && distanceMoved > -1100)
+            while(opModeIsActive() && distanceMoved > -1250)
             {
-                robot.setIntakePower(0);
+
+                robot.intake();
+                robot.setIntakePower(1);
 
                 distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-                robot.drive(0, .35, 0);
+                robot.drive(0, .6+distanceMoved/3600, 0);
 
                 if(distanceMoved < -300)
                     robot.deposit();
 
-                if (distanceMoved < -700)
+                if (distanceMoved < -800)
                     robot.rightRampDown();
-                if (distanceMoved < -1000)
+                if (distanceMoved < -1050)
                     robot.depositRight();
 
                 telemetry.addData("distance moved", distanceMoved);
                 telemetry.update();
             }
 
-            robot.setIntakePower(-.5);
 
-            //drives back to wall
-            while(opModeIsActive() && distanceMoved < 10)
+            robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            //drives back to wall1
+            while(opModeIsActive() && distanceMoved < 75)
             {
+                robot.setIntakePower(-.5);
                 distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+                if(distanceMoved>-50)
+                {
+                    robot.depositLevel=0;
+                    robot.deposit();
+                }
                 robot.drive(0, -.6, 0);
 
                 telemetry.addData("distance moved", distanceMoved);
                 telemetry.update();
+
             }
 
         } //end of subsequent cycles for loop
-
+        robot.intakeArm.setPower(0);
         AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
         //drives to warehouse to park
-        while(opModeIsActive() && distanceMoved > -2500)
+        while(opModeIsActive() && distanceMoved > -2450)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
             robot.drive(-.8, -.2, 0);

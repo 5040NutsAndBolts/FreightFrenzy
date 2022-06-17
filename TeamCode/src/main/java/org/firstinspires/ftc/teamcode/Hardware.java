@@ -582,6 +582,7 @@ public class Hardware
     public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
     public void intakeStart() {intakeBlocker.setPosition(0.1);}
     public void openIntake() {intakeBlocker.setPosition(.74);}
+    public void reallyOpenIntake() {intakeBlocker.setPosition(.76);}
     //public void intakeHalfWay(){intakeBlocker.setPosition(.31);}
     public void closeIntake(){intakeBlocker.setPosition(0.532);}
     public void reallyCloseIntake(){intakeBlocker.setPosition(0.75);}
