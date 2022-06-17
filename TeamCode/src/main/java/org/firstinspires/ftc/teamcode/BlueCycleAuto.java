@@ -48,8 +48,9 @@ import org.firstinspires.ftc.teamcode.AutoMethods;
 
 
 @Autonomous(name = "BlueCycleAuto", group = "Auto")
-public class BlueCycleAuto extends LinearOpMode
+public abstract class BlueCycleAuto extends LinearOpMode
 {
+    Hardware robot = new Hardware(hardwareMap);
     //about 42.5 ticks per inch
     //x is between blue and red
     //y is along one color wall
@@ -60,7 +61,13 @@ public class BlueCycleAuto extends LinearOpMode
     int autoType = 1;
 
     int openCVDetectionLevel = 1;
+    public void thisSideDoor(){
+        robot.depositRight();
+    }
+    public void thisSideRampDown(){
+        robot.rightRampDown();
 
+}
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -83,7 +90,6 @@ public class BlueCycleAuto extends LinearOpMode
         int auto = 3;
 
         Hardware.currentOpMode = this;
-        Hardware robot = new Hardware(hardwareMap);
         FileWriter f = null;
         robot.resetStaticMotors();
         try
@@ -153,9 +159,9 @@ public class BlueCycleAuto extends LinearOpMode
             robot.deposit();
 
             if (distanceMoved < -400*autoType)
-                robot.rightRampDown();
+                thisSideRampDown();
             if (distanceMoved < -600*autoType)
-                robot.depositRight();
+                thisSideDoor();
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();
@@ -182,8 +188,7 @@ public class BlueCycleAuto extends LinearOpMode
         robot.depositLevel = 0;
         robot.deposit();
         robot.depositNeutral();
-        robot.rightRampUp();
-
+        thisSideRampDown();
         ElapsedTime intakeTimer = new ElapsedTime();
         intakeTimer.startTime();
         ElapsedTime curveTimer = new ElapsedTime();
@@ -316,9 +321,9 @@ public class BlueCycleAuto extends LinearOpMode
             }
 
             if (distanceMoved < -800*autoType)
-                robot.rightRampDown();
+                thisSideRampDown();
             if (distanceMoved < -950*autoType)
-                robot.depositRight();
+                thisSideDoor();
 
             telemetry.addData("hit line", hitLine);
             telemetry.update();
@@ -349,7 +354,7 @@ public class BlueCycleAuto extends LinearOpMode
             robot.depositLevel = 0;
             robot.deposit();
             robot.depositNeutral();
-            robot.rightRampUp();
+            thisSideRampDown();
             robot.setIntakePower(0);
 
             //drives into warehouse 2+
@@ -475,9 +480,9 @@ public class BlueCycleAuto extends LinearOpMode
                     robot.deposit();
 
                 if (distanceMoved < -800)
-                    robot.rightRampDown();
+                    thisSideRampDown();
                 if (distanceMoved < -1050)
-                    robot.depositRight();
+                    thisSideDoor();
 
                 telemetry.addData("distance moved", distanceMoved);
                 telemetry.update();
@@ -516,7 +521,7 @@ public class BlueCycleAuto extends LinearOpMode
 
             robot.depositLevel = 0;
             robot.deposit();
-            robot.rightRampUp();
+            thisSideRampDown();
             robot.depositNeutral();
 
             telemetry.addData("distance moved", distanceMoved);
@@ -525,4 +530,5 @@ public class BlueCycleAuto extends LinearOpMode
 
         robot.drive(0,0,0);
     }
+
 }

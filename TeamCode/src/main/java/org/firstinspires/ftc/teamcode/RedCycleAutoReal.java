@@ -52,9 +52,19 @@ import org.firstinspires.ftc.teamcode.AutoMethods;
     @Autonomous(name = "RedCycleAutoReal", group = "Auto")
     public class RedCycleAutoReal extends BlueCycleAuto
     {
+        Hardware robot = new Hardware(hardwareMap);
+        @Override
+        public void thisSideDoor(){
+            robot.depositLeft();
+        }
+        @Override
+        public void thisSideRampDown(){
+            robot.leftRampDown();
+        }
         @Override
         public void runOpMode() throws InterruptedException {
             int autoType = -1;
             super.runOpMode();
         }
     }
+
