@@ -252,7 +252,7 @@ public class Hardware
 
     //Deposit ramp positions
     public void leftRampUp(){leftRamp.setPosition(.3);}
-    public void leftRampDown(){leftRamp.setPosition(.6);}
+    public void leftRampDown(){leftRamp.setPosition(.75);}
     public void rightRampUp(){rightRamp.setPosition(.96);}
     public void rightRampDown(){rightRamp.setPosition(.4);}
 

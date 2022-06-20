@@ -50,6 +50,7 @@ import org.firstinspires.ftc.teamcode.AutoMethods;
 @Autonomous(name = "BlueDuckAuto", group = "Auto")
 public class BlueDuckAuto extends LinearOpMode
 {
+    public int autoType = 1;
     //about 42.5 ticks per inch
     //x is between blue and red
     //y is along one color wall
@@ -58,6 +59,13 @@ public class BlueDuckAuto extends LinearOpMode
     double distanceMoved = 0;
 
     int openCVDetectionLevel = 1;
+
+    Hardware robot;
+
+    public void thisSideDuckSpin(double power)
+    {
+        robot.setRightDuckSpinnerPower(power);
+    }
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -80,7 +88,7 @@ public class BlueDuckAuto extends LinearOpMode
         int auto = 3;
 
         Hardware.currentOpMode = this;
-        Hardware robot = new Hardware(hardwareMap);
+        robot = new Hardware(hardwareMap);
         FileWriter f = null;
         robot.resetStaticMotors();
         try {
@@ -122,10 +130,10 @@ public class BlueDuckAuto extends LinearOpMode
         boolean setMode = true;
 
         //strafe towards center
-        while(opModeIsActive() && distanceMoved < 210)
+        while(opModeIsActive() && distanceMoved < 210 * autoType)
         {
-            distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, -.5, 0);
+            distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+            robot.drive(0, -.5 * autoType, 0);
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.addLine("driving sideways");
@@ -136,10 +144,10 @@ public class BlueDuckAuto extends LinearOpMode
         distanceMoved = 0;
 
         //drive to duck wheel
-        while(opModeIsActive() && distanceMoved > -930)
+        while(opModeIsActive() && distanceMoved > -930 * autoType)
         {
-            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(-.6, 0, 0);
+            distanceMoved = autoType * (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+            robot.drive(-.6 * autoType, 0, 0);
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.addLine("driving forward");
@@ -150,7 +158,7 @@ public class BlueDuckAuto extends LinearOpMode
         while(opModeIsActive() && totalAutoTime.seconds() < 4)
         {
             robot.drive(0,0,0);
-            robot.setRightDuckSpinnerPower(-.7);
+            thisSideDuckSpin(.7);
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();
@@ -161,10 +169,10 @@ public class BlueDuckAuto extends LinearOpMode
         distanceMoved = 0;
 
         //park in storage unit
-        while(opModeIsActive() && distanceMoved < 1250)
+        while(opModeIsActive() && distanceMoved < 1250 * autoType)
         {
-            distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, -.5, 0);
+            distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+            robot.drive(0, -.5 * autoType, 0);
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();
@@ -176,8 +184,8 @@ public class BlueDuckAuto extends LinearOpMode
         //drive against wall
         while(opModeIsActive() && totalAutoTime.seconds() < 6.5)
         {
-            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(-.2, 0, 0);
+            distanceMoved = autoType * (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+            robot.drive(-.2 * autoType, 0, 0);
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.addData("seconds", totalAutoTime.seconds());

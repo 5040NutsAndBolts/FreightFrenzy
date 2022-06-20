@@ -48,34 +48,19 @@ import java.util.Scanner;
 
 import org.firstinspires.ftc.teamcode.AutoMethods;
 
-
-    @Autonomous(name = "RedCycleAutoReal", group = "Auto")
-    public class RedCycleAutoReal extends BlueCycleAuto
+@Autonomous(name = "RedDuckAutoReal", group = "Auto")
+public class RedDuckAutoReal extends BlueDuckAuto
+{
+    @Override
+    public void thisSideDuckSpin(double power)
     {
-
-        @Override
-        public void thisSideFlicker()
-        {
-            super.robot.depositLeft();
-        }
-
-        @Override
-        public void thisSideRampDown()
-        {
-            super.robot.leftRampDown();
-        }
-
-        @Override
-        public void thisSideRampUp()
-        {
-            super.robot.leftRampUp();
-        }
-
-        @Override
-        public void runOpMode() throws InterruptedException
-        {
-            super.autoType = -1;
-            super.runOpMode();
-        }
+        robot.setLeftDuckSpinnerPower(power);
     }
 
+    @Override
+    public void runOpMode() throws InterruptedException
+    {
+        super.autoType = -1;
+        super.runOpMode();
+    }
+}

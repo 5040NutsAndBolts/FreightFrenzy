@@ -4,6 +4,7 @@ import android.app.Application;
 import android.os.Environment;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -47,6 +48,7 @@ import java.util.Scanner;
 import org.firstinspires.ftc.teamcode.AutoMethods;
 
 
+@Disabled
 @Autonomous(name = "RedCycleAuto", group = "Auto")
 public class RedCycleAuto extends LinearOpMode
 {
