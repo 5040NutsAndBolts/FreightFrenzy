@@ -111,10 +111,10 @@ public class remoteAuto extends LinearOpMode {
         ElapsedTime totalAutoTime = new ElapsedTime();
         totalAutoTime.startTime();
         //Open CV goes here to spit out 1, 2, or 3
-        //moves robot to shipping hub
 
         robot.intakeArmUp();
         robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         //moves the robot closer to hub in auto 3
         double towardsHub=auto==3?-53:0;
 

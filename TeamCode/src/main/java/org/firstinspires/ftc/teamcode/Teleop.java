@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
 public class Teleop extends LinearOpMode
 {
 
+    boolean x1Pressed = false;
     boolean x2Pressed = false;
     double horizontalPos=.5;
     double verticalPos=.65;
@@ -29,6 +30,7 @@ public class Teleop extends LinearOpMode
     boolean leftDepositeRamp=true;
     boolean linkedDeposit = true;
     boolean tseMode = false;
+    boolean invertedStrafe = false;
     ElapsedTime intakeTimer;
 
     ElapsedTime e;
@@ -61,13 +63,13 @@ public class Teleop extends LinearOpMode
 
         while (opModeIsActive())
         {
-
-            if(gamepad2.right_trigger>.4)
+            //I don't know what this does but I need right trigger for other stuff -Eleanor
+            /*if(gamepad2.right_trigger>.4)
             {
                 robot.depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
-            robot.updatePositionRoadRunner();
+            robot.updatePositionRoadRunner();*/
 
             robot.deposit();
 
@@ -77,8 +79,18 @@ public class Teleop extends LinearOpMode
                 tseMode = false;
             }else if(gamepad1.right_bumper)
             {
-
                 tseMode = true;
+            }
+
+            //switches inverted drive on and off
+            if(gamepad1.x && !x1Pressed)
+            {
+                invertedStrafe = !invertedStrafe;
+                x1Pressed = true;
+            }
+            else
+            {
+                x1Pressed = false;
             }
 
             //Slide outtake motor controller set up (linear slides)
@@ -243,10 +255,17 @@ public class Teleop extends LinearOpMode
 
             if(!tseMode)
             {
-                //Set drivetrain power
-                robot.drive(gamepad1.left_stick_y * driveSpeed, gamepad1.left_stick_x * driveSpeed, gamepad1.right_stick_x * driveSpeed);
-                robot.setOutPower(gamepad2.right_stick_y);
-
+                //set drive power
+                if(!invertedStrafe)
+                {
+                    robot.drive(gamepad1.left_stick_y * driveSpeed, gamepad1.left_stick_x * driveSpeed, gamepad1.right_stick_x * driveSpeed);
+                    robot.setOutPower(gamepad2.right_stick_y);
+                }
+                else
+                {
+                    robot.drive(gamepad1.left_stick_y * driveSpeed, -gamepad1.left_stick_x * driveSpeed, gamepad1.right_stick_x * driveSpeed);
+                    robot.setOutPower(gamepad2.right_stick_y);
+                }
             }
             else
             {
@@ -259,16 +278,35 @@ public class Teleop extends LinearOpMode
                 horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.48,1);
                 verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.48,1);
             }
-            robot.setRightDuckSpinnerPower(gamepad2.left_stick_button?-.8*gamepad2.left_trigger:-gamepad2.left_trigger);
+
+            //robot.setRightDuckSpinnerPower(gamepad2.left_stick_button?-.8*gamepad2.left_trigger:-gamepad2.left_trigger);
             //Set duck spinner power
-            if(gamepad2.left_trigger>.25)
+            /*if(gamepad2.left_trigger>.25)
             {
                 robot.setLeftDuckSpinnerPower(-1);
 
             }
             else{
-
                 robot.setLeftDuckSpinnerPower(0);
+            }*/
+
+            if(gamepad2.right_trigger == 0)
+            {
+                if (!gamepad2.left_stick_button)
+                    robot.setRightDuckSpinnerPower(-gamepad2.left_trigger);
+                else
+                    robot.setRightDuckSpinnerPower(gamepad2.left_trigger * -.8);
+            }
+
+            if(gamepad2.left_trigger == 0)
+            {
+                if (!gamepad2.right_stick_button) {
+                    robot.setLeftDuckSpinnerPower(gamepad2.right_trigger);
+                    robot.setRightDuckSpinnerPower(gamepad2.right_trigger);
+                } else {
+                    robot.setRightDuckSpinnerPower(gamepad2.right_trigger * .8);
+                    robot.setLeftDuckSpinnerPower(gamepad2.right_trigger);
+                }
             }
 
             //Toggle Intake Arm Up & Down when gamepad1.a is pressed
@@ -299,15 +337,16 @@ public class Teleop extends LinearOpMode
             telemetry.addData("Deposit Override",robot.depositOverride);
             telemetry.addData("Deposit Level", robot.depositLevel);
             telemetry.addLine();
+            telemetry.addData("Inverted Strafe", invertedStrafe);
             telemetry.addData("Slow-Mode", slowMode);
             telemetry.addData("TSE Mode", tseMode);
             telemetry.addLine();
-            telemetry.addData("Distance Moved", distanceMoved);
+            /*telemetry.addData("Distance Moved", distanceMoved);
             telemetry.addData("front left", robot.frontLeft.getCurrentPosition());
             telemetry.addData("front right", robot.frontRight.getCurrentPosition());
             telemetry.addData("back left", robot.backLeft.getCurrentPosition());
             telemetry.addData("back right", robot.backRight.getCurrentPosition());
-            telemetry.addData("red", robot.intakeColorSensor.red());
+            telemetry.addData("red", robot.intakeColorSensor.red());*/
 
             //telemetry.addData("intake position", robot.intakeArm.getCurrentPosition());
 

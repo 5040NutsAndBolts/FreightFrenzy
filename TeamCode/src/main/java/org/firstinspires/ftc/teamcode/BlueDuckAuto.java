@@ -132,6 +132,12 @@ public class BlueDuckAuto extends LinearOpMode
         //strafe towards center
         while(opModeIsActive() && distanceMoved < 210 * autoType)
         {
+            robot.depositLevel = 1;
+            robot.deposit();
+            robot.intakeArmDown();
+            robot.closeIntake();
+            robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
             distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
             robot.drive(0, -.5 * autoType, 0);
 
@@ -143,9 +149,31 @@ public class BlueDuckAuto extends LinearOpMode
         AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
+        ElapsedTime t = new ElapsedTime();
+        boolean intakeUp = false;
+
         //drive to duck wheel
         while(opModeIsActive() && distanceMoved > -930 * autoType)
         {
+            robot.depositLevel = 0;
+            robot.intakeArmUp();
+            robot.intake();
+            if(robot.intakeArm.getCurrentPosition() < 10 && !intakeUp)
+            {
+                robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                intakeUp = true;
+                t.reset();
+                t.startTime();
+            }
+
+            if(intakeUp)
+                robot.intakeArm.setPower(-.7);
+            if(intakeUp && t.seconds() > .05)
+            {
+                robot.reallyOpenIntake();
+                robot.setIntakePower(0);
+            }
+
             distanceMoved = autoType * (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
             robot.drive(-.6 * autoType, 0, 0);
 
@@ -158,7 +186,7 @@ public class BlueDuckAuto extends LinearOpMode
         while(opModeIsActive() && totalAutoTime.seconds() < 4)
         {
             robot.drive(0,0,0);
-            thisSideDuckSpin(.7);
+            thisSideDuckSpin(-.7);
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();

@@ -578,7 +578,7 @@ public class Hardware
     }
 
 
-    public int intakeArmPosition() {return intakeArm.getCurrentPosition();}
+    public int getIntakeArmPosition() {return intakeArm.getCurrentPosition();}
     public void resetIntakeArmPosition(){intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
     public void intakeStart() {intakeBlocker.setPosition(0.1);}
     public void openIntake() {intakeBlocker.setPosition(.74);}

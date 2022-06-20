@@ -135,9 +135,6 @@ public class BlueCycleAuto extends LinearOpMode
         totalAutoTime.startTime();
         //Open CV goes here to spit out 1, 2, or 3
 
-        //robot.intakeArmUp();
-        robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         boolean setMode = true;
         boolean hitLine = false;
 
@@ -151,7 +148,11 @@ public class BlueCycleAuto extends LinearOpMode
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
             robot.drive(1, 0,0);
-            robot.deposit();
+
+            /*robot.deposit();
+            robot.intakeArmUp();
+            robot.openIntake();
+            robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();
@@ -159,6 +160,7 @@ public class BlueCycleAuto extends LinearOpMode
 
         AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
+        robot.depositLevel = auto - 1;
 
         //drive to hub
         while(opModeIsActive() && distanceMoved > (-950 + (auto==1?0:-150)))
@@ -167,8 +169,6 @@ public class BlueCycleAuto extends LinearOpMode
                 distanceMoved = (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
             else
                 distanceMoved =  -.6 * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-
-
 
             robot.drive(0, (.7 + distanceMoved / 2500) * autoType, 0);
             robot.deposit();
@@ -215,10 +215,21 @@ public class BlueCycleAuto extends LinearOpMode
         boolean color = false;
         boolean draw = false;
 
+        robot.depositLevel = 1;
+        robot.deposit();
+        robot.intakeArmUp();
+        robot.openIntake();
+        robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         //drives into warehouse and intakes 1
         while(opModeIsActive() && distanceMoved > -3450 && curveTimer.seconds() < 5)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+
+            robot.intakeArmDown();
+            robot.closeIntake();
+            robot.depositLevel = 0;
+            robot.deposit();
 
             double curve = curveTimer.seconds() > 1.9?.13:0;
             if(curveTimer.seconds() > 3.5)
@@ -232,10 +243,6 @@ public class BlueCycleAuto extends LinearOpMode
                 robot.drive(-1 - distanceMoved / 2000,-.1 * autoType,0);
             else
                 robot.drive(-.7, -.1 * autoType, 0);
-
-            robot.intakeArmDown();
-            robot.closeIntake();
-            //robot.intake();
 
             if(distanceMoved < -1200)
             {
@@ -327,7 +334,7 @@ public class BlueCycleAuto extends LinearOpMode
         //robot.setIntakePower(0);
 
         //drive to hub to score freight
-        robot.depositLevel = 3;
+        robot.depositLevel = 2;
         while(opModeIsActive() && distanceMoved > -1250)
         {
             robot.setIntakePower(1);
