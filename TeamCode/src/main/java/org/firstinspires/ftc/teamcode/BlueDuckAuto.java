@@ -149,8 +149,8 @@ public class BlueDuckAuto extends LinearOpMode
             colors[0] = robot.lineColorSensor.alpha();
 
             waitForStart();
-            robot.setVerticalPosition(1);
-            robot.setHorizontalPosition(.5);
+            robot.setVerticalPosition(.61);
+            robot.setHorizontalPosition(.44);
             colors[1] = robot.lineColorSensor.alpha();
             double ambientIntakeColor = robot.intakeColorSensor.red();
             ElapsedTime totalAutoTime = new ElapsedTime();

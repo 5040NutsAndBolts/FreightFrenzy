@@ -159,8 +159,8 @@ public class BlueCycleAuto extends LinearOpMode
         robot.resetStaticMotors();
 
         waitForStart();
-        robot.setVerticalPosition(1);
-        robot.setHorizontalPosition(.5);
+        robot.setVerticalPosition(.61);
+        robot.setHorizontalPosition(.44);
         colors[1] = robot.lineColorSensor.alpha();
         double ambientIntakeColor = robot.intakeColorSensor.red();
         ElapsedTime totalAutoTime = new ElapsedTime();
@@ -205,9 +205,9 @@ public class BlueCycleAuto extends LinearOpMode
             robot.drive(0, (.7 + distanceMoved / 2500) * autoType, 0);
             robot.deposit();
 
-            if (distanceMoved < -400 + (autoType == -1 ? -200 : 0))
+            if (distanceMoved < -400 + (autoType == -1 ? -250 : 0))
                 thisSideRampDown();
-            if (distanceMoved < -600 + (autoType == -1 ? -200 : 0))
+            if (distanceMoved < -600 + (autoType == -1 ? -350 : 0))
                 thisSideFlicker();
 
             telemetry.addData("distance moved", distanceMoved);
@@ -315,7 +315,7 @@ public class BlueCycleAuto extends LinearOpMode
         ElapsedTime curveBack = new ElapsedTime();
 
         //drives from warehouse to center wall 2
-        while(opModeIsActive() && distanceMoved < -600 + (autoType == -1? 200 : 0))
+        while(opModeIsActive() && distanceMoved < -600 - (autoType == -1? 200 : 0))
         {
             robot.intakeArmUp();
             robot.intake();

@@ -15,8 +15,8 @@ public class Teleop extends LinearOpMode
 {
     boolean leftStick1 = false;
     boolean x2Pressed = false;
-    double horizontalPos=.5;
-    double verticalPos=.65;
+    double horizontalPos=.44;
+    double verticalPos=.61;
     boolean a2Pressed = false;
     boolean a1Pressed = false;
     boolean rightRampUp = true;
@@ -37,8 +37,6 @@ public class Teleop extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-
-
         e=new ElapsedTime();
         e.startTime();
         double lastTime=0;
@@ -195,8 +193,14 @@ public class Teleop extends LinearOpMode
                     leftRampUp = true;
                     rightRampUp = true;
                 }
+            }
 
-
+            //raise everything regardless of linked controls
+            if (gamepad2.dpad_down)
+            {
+                robot.depositNeutral();
+                leftRampUp = true;
+                rightRampUp = true;
             }
 
             //unlinked ramp controls
@@ -339,6 +343,8 @@ public class Teleop extends LinearOpMode
             telemetry.addData("Slow-Mode", slowMode);
             telemetry.addData("TSE Mode", tseMode);
             telemetry.addLine();
+            telemetry.addData("hozizontal", horizontalPos);
+            telemetry.addData("vertical", verticalPos);
             /*telemetry.addData("Distance Moved", distanceMoved);
             telemetry.addData("front left", robot.frontLeft.getCurrentPosition());
             telemetry.addData("front right", robot.frontRight.getCurrentPosition());
