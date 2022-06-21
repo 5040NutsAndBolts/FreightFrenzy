@@ -78,53 +78,85 @@ public class BlueCycleAuto extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Right Webcam"), cameraMonitorViewId);
-
-        webcam.setPipeline(new TSEFinder());
-        webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {
-                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-            }
-
-            @Override
-            public void onError(int errorCode) {
-            }
-        });
-
         int auto = 3;
 
         Hardware.currentOpMode = this;
         robot = new Hardware(hardwareMap);
-        FileWriter f = null;
-        robot.resetStaticMotors();
-        try
+
+        //blue auto
+        if(autoType == 1)
         {
-            f = new FileWriter(Environment.getExternalStorageDirectory() + "/testingData.txt");
-        } catch (IOException e) {
-            e.printStackTrace();
+            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Right Webcam"), cameraMonitorViewId);
+
+            webcam.setPipeline(new TSEFinder());
+            webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
+            webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+                @Override
+                public void onOpened() {
+                    webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                }
+            });
+
+            while (!isStopRequested() & !isStarted())
+            {
+
+                if (TSEFinder.screenPosition.x < 50)
+                    auto = 3;
+                else if (TSEFinder.screenPosition.x < 150)
+                    auto = 2;
+                else
+                    auto = 1;
+
+                telemetry.addData("auto", auto);
+                telemetry.update();
+            }
         }
+        //red auto
+        else
+        {
+            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Left Webcam"), cameraMonitorViewId);
+
+            webcam.setPipeline(new TSEFinder());
+            webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
+            webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+                @Override
+                public void onOpened() {
+                    webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                }
+            });
+
+            while (!isStopRequested() & !isStarted())
+            {
+
+                if (TSEFinder.screenPosition.x > 150)
+                    auto = 1;
+                else if (TSEFinder.screenPosition.x > 20)
+                    auto = 2;
+                else
+                    auto = 3;
+
+                telemetry.addData("auto", auto);
+                telemetry.update();
+            }
+        }
+
         robot.depositNeutral();
         thisSideRampUp();
         //robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
         int[] colors = new int[3];
         colors[0] = robot.lineColorSensor.alpha();
 
-        while (!isStopRequested() & !isStarted())
-        {
-
-            if (TSEFinder.screenPosition.x < 50)
-                auto = 1;
-            else if (TSEFinder.screenPosition.x < 150)
-                auto = 2;
-            else
-                auto = 3;
-
-            telemetry.addData("auto", auto);
-            telemetry.update();
-        }
+        robot.resetStaticMotors();
 
         waitForStart();
         robot.setVerticalPosition(1);
@@ -143,7 +175,7 @@ public class BlueCycleAuto extends LinearOpMode
         telemetry.addData("distance moved", distanceMoved);
         telemetry.update();
 
-        //drive backwards to center wall
+        //drive backwards to center wall 1
         while(opModeIsActive() && distanceMoved < 800 + (autoType == -1? -100 : 0))
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
@@ -282,8 +314,8 @@ public class BlueCycleAuto extends LinearOpMode
         double finalCurveTime = curveTimer.seconds();
         ElapsedTime curveBack = new ElapsedTime();
 
-        //drives from warehouse to center wall
-        while(opModeIsActive() && distanceMoved < -600 + (autoType == -1? 100 : 0))
+        //drives from warehouse to center wall 2
+        while(opModeIsActive() && distanceMoved < -600 + (autoType == -1? 200 : 0))
         {
             robot.intakeArmUp();
             robot.intake();
@@ -453,8 +485,8 @@ public class BlueCycleAuto extends LinearOpMode
             finalCurveTime=curveTimer.seconds();
             curveBack.reset();
 
-            //goes from warehouse to center wall
-            while(opModeIsActive() && distanceMoved < -600 )
+            //goes from warehouse to center wall 3+
+            while(opModeIsActive() && distanceMoved < -600 + (autoType == -1 ? 100 : 0))
             {
 
                 robot.intakeArmUp();
@@ -508,7 +540,7 @@ public class BlueCycleAuto extends LinearOpMode
                 else
                     distanceMoved = (robot.frontRight.getCurrentPosition() + robot.backLeft.getCurrentPosition()) / 2;
 
-                robot.drive(0, autoType * .6 + distanceMoved / 3600, 0);
+                robot.drive(0, autoType * (.6 + distanceMoved / 3600), 0);
 
                 if(distanceMoved < -300)
                     robot.deposit();

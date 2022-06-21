@@ -13,8 +13,7 @@ import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
 @TeleOp(name="Teleop",group="Teleop")
 public class Teleop extends LinearOpMode
 {
-
-    boolean x1Pressed = false;
+    boolean leftStick1 = false;
     boolean x2Pressed = false;
     double horizontalPos=.5;
     double verticalPos=.65;
@@ -83,14 +82,14 @@ public class Teleop extends LinearOpMode
             }
 
             //switches inverted drive on and off
-            if(gamepad1.x && !x1Pressed)
+            if(gamepad1.left_stick_button && !leftStick1)
             {
                 invertedStrafe = !invertedStrafe;
-                x1Pressed = true;
+                leftStick1 = true;
             }
             else
             {
-                x1Pressed = false;
+                leftStick1 = false;
             }
 
             //Slide outtake motor controller set up (linear slides)
@@ -199,7 +198,6 @@ public class Teleop extends LinearOpMode
 
 
             }
-
 
             //unlinked ramp controls
             if(!linkedDeposit) {

@@ -54,7 +54,7 @@ public class RedDuckAutoReal extends BlueDuckAuto
     @Override
     public void thisSideDuckSpin(double power)
     {
-        robot.setLeftDuckSpinnerPower(power);
+        robot.setLeftDuckSpinnerPower(-power);
     }
 
     @Override
