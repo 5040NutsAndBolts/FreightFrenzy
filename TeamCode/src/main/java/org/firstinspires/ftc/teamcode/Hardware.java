@@ -282,10 +282,10 @@ public class Hardware
 
             } else if (depositLevel == 1)
             {
-                if (depositSlide.getCurrentPosition() < 505||depositSlide.getCurrentPosition() > 509)
+                if (depositSlide.getCurrentPosition() < 545||depositSlide.getCurrentPosition() > 575)
                 {
                     depositSlide.setPower(1);
-                    depositSlide.setTargetPosition(507);
+                    depositSlide.setTargetPosition(560);
                 }
                 else
                 {

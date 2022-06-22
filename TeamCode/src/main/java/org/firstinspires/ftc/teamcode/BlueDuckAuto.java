@@ -74,7 +74,8 @@ public class BlueDuckAuto extends LinearOpMode
     public void thisSideFlicker(){robot.depositRight();}
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() throws InterruptedException
+    {
         int auto = 3;
 
         if (autoType == 1)
@@ -140,143 +141,173 @@ public class BlueDuckAuto extends LinearOpMode
             }
         }
 
-            Hardware.currentOpMode = this;
-            robot = new Hardware(hardwareMap);
-            FileWriter f = null;
-            robot.resetStaticMotors();
-            try {
-                f = new FileWriter(Environment.getExternalStorageDirectory() + "/testingData.txt");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            robot.depositNeutral();
-            //robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
-            int[] colors = new int[3];
-            colors[0] = robot.lineColorSensor.alpha();
+        Hardware.currentOpMode = this;
+        robot = new Hardware(hardwareMap);
+        FileWriter f = null;
+        robot.resetStaticMotors();
+        try {
+            f = new FileWriter(Environment.getExternalStorageDirectory() + "/testingData.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        robot.depositNeutral();
+        //robot.resetOdometry(0, robot.y, 3 * Math.PI / 2);
+        int[] colors = new int[3];
+        colors[0] = robot.lineColorSensor.alpha();
 
-            waitForStart();
-            robot.setVerticalPosition(.61);
-            robot.setHorizontalPosition(.44);
-            colors[1] = robot.lineColorSensor.alpha();
-            double ambientIntakeColor = robot.intakeColorSensor.red();
-            ElapsedTime totalAutoTime = new ElapsedTime();
-            totalAutoTime.startTime();
-            //Open CV goes here to spit out 1, 2, or 3
-            //moves robot to shipping hub
+        waitForStart();
+        robot.setVerticalPosition(.61);
+        robot.setHorizontalPosition(.44);
+        colors[1] = robot.lineColorSensor.alpha();
+        double ambientIntakeColor = robot.intakeColorSensor.red();
+        ElapsedTime totalAutoTime = new ElapsedTime();
+        totalAutoTime.startTime();
+        //Open CV goes here to spit out 1, 2, or 3
+        //moves robot to shipping hub
 
-            robot.intakeArmUp();
-            robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.intakeArmUp();
+        robot.intakeArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            boolean setMode = true;
+        boolean setMode = true;
 
-            //strafe towards center
-            while (opModeIsActive() && distanceMoved < 400) {
-                robot.depositLevel = 1;
-                robot.deposit();
-                robot.intakeArm.setPower(-.8);
-                robot.openIntake();
-                robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //strafe towards center
+        while (opModeIsActive() && distanceMoved < 320) {
+            robot.depositLevel = 1;
+            robot.deposit();
+            robot.intakeArm.setPower(-.8);
+            robot.openIntake();
+            robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-                robot.drive(0, -.5 * autoType, 0);
+            distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+            robot.drive(0, -.5 * autoType, 0);
 
-                telemetry.addData("distance moved", distanceMoved);
-                telemetry.addLine("driving sideways");
-                telemetry.update();
-            }
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.addLine("driving sideways");
+            telemetry.update();
+        }
 
-            AutoMethods.resetEncoders(robot);
-            distanceMoved = 0;
-            robot.intakeArm.setPower(0);
+        AutoMethods.resetEncoders(robot);
+        distanceMoved = 0;
+        robot.intakeArm.setPower(0);
 
-            //drive to duck wheel
-            while (opModeIsActive() && distanceMoved > -1200 ) {
-                robot.depositLevel = 0;
-                robot.deposit();
-                robot.intakeArm.setPower(-.8);
-                robot.openIntake();
+        //drive to duck wheel
+        while (opModeIsActive() && distanceMoved > -1320 ) {
+            robot.depositLevel = 0;
+            robot.deposit();
+            robot.intakeArm.setPower(-.8);
+            robot.openIntake();
 
-                distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-                robot.drive(-.6, 0, 0);
+            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+            robot.drive(-.6 + .4 * (distanceMoved / -1300), 0, 0);
 
-                telemetry.addData("distance moved", distanceMoved);
-                telemetry.addLine("driving forward");
-                telemetry.update();
-            }
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.addLine("driving forward");
+            telemetry.update();
+        }
 
-            //spin duck
-            while (opModeIsActive() && totalAutoTime.seconds() < 4 + (autoType == -1 ? 1 : 0))
-            {
-                robot.drive(0, 0, 0);
-                thisSideDuckSpin(-.7);
-                robot.intakeArm.setPower(-.8);
-                robot.openIntake();
+        //spin duck
+        while (opModeIsActive() && totalAutoTime.seconds() < 7 + (autoType == -1 ? 1 : 0))
+        {
+            robot.drive(0, 0, 0);
+            thisSideDuckSpin(-.7);
+            robot.intakeArm.setPower(-.8);
+            robot.openIntake();
 
-                telemetry.addData("distance moved", distanceMoved);
-                telemetry.update();
-            }
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
+        }
 
-            robot.setRightDuckSpinnerPower(0);
-            AutoMethods.resetEncoders(robot);
-            distanceMoved = 0;
-            robot.intakeArm.setPower(0);
+        robot.setRightDuckSpinnerPower(0);
+        AutoMethods.resetEncoders(robot);
+        distanceMoved = 0;
+        robot.intakeArm.setPower(0);
 
-            //strafe towards field center
-            while (opModeIsActive() && distanceMoved < 1250)
-            {
-                distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-                robot.drive(0, -.5 * autoType, 0);
+        //strafe towards field center
+        while (opModeIsActive() && distanceMoved < 1490)
+        {
+            distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+            robot.drive(0, -.5 * autoType, 0);
 
-                telemetry.addData("distance moved", distanceMoved);
-                telemetry.update();
-            }
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
+        }
 
-            AutoMethods.resetEncoders(robot);
-            distanceMoved = 0;
+        AutoMethods.resetEncoders(robot);
+        distanceMoved = 0;
 
-
-            //drive to hub
-            while(distanceMoved > -1000)
-            {
-                distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-                robot.drive(-.6, 0, .5);
-
-                telemetry.addData("distance moved", distanceMoved);
-                telemetry.update();
-            }
+        //drive to hub
+        while(opModeIsActive() && distanceMoved < 1520)
+        {
+            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+            robot.drive(.3, 0, .19);
 
             robot.depositLevel = auto - 1;
             robot.deposit();
             thisSideRampDown();
-            thisSideFlicker();
-            robot.depositNeutral();
-            robot.depositLevel = 0;
-            robot.deposit();
 
-            //drive against wall
-            while(distanceMoved < -10)
-            {
-                distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-                robot.drive(.6, 0, -.5);
-
-                telemetry.addData("distance moved", distanceMoved);
-                telemetry.update();
-            }
-
-            //park in storage unit
-            while(opModeIsActive() && distanceMoved > -500)
-            {
-                distanceMoved = autoType * (robot.frontRight.getCurrentPosition() + robot.backLeft.getCurrentPosition()) / 2;
-                robot.drive(0, .5 * autoType, 0);
-
-                telemetry.addData("distance moved", distanceMoved);
-                telemetry.update();
-            }
-
-            telemetry.addLine("robot stopped");
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.addLine("towards hub");
             telemetry.update();
-            robot.drive(0, 0, 0);
         }
+
+        //deposit preload
+        while(opModeIsActive() && totalAutoTime.seconds() < 13)
+        {
+            robot.drive(0,0,0);
+            thisSideFlicker();
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.addLine("depositing");
+            telemetry.update();
+        }
+
+        AutoMethods.resetEncoders(robot);
+        distanceMoved = 0;
+
+        //strafe towards center
+        while (opModeIsActive() && distanceMoved < 350)
+        {
+            distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
+            robot.drive(0, -.6 * autoType, .6);
+
+            thisSideRampUp();
+            robot.depositNeutral();
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.addLine("driving sideways");
+            telemetry.update();
+        }
+
+        AutoMethods.resetEncoders(robot);
+        distanceMoved = 0;
+
+        //strafe against wall
+        while(opModeIsActive() && distanceMoved > -1900)
+        {
+            distanceMoved = autoType * (robot.frontRight.getCurrentPosition() + robot.backLeft.getCurrentPosition()) / 2;
+            robot.drive(0, -.7 + .4 * (distanceMoved / -2000) * autoType, 0);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
+        }
+
+        AutoMethods.resetEncoders(robot);
+        distanceMoved = 0;
+
+        //park in storage unit
+        while(opModeIsActive() && distanceMoved > -1050)
+        {
+            distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
+            robot.drive(-.6, 0, 0);
+
+            telemetry.addData("distance moved", distanceMoved);
+            telemetry.update();
+        }
+
+        telemetry.addLine("robot stopped");
+        telemetry.update();
+        robot.drive(0, 0, 0);
     }
+}
 
 
