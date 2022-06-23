@@ -107,17 +107,18 @@ public class BlueCycleAuto extends LinearOpMode
             {
 
                 if (TSEFinder.screenPosition.x < 50)
-                    auto = 3;
+                    auto = 1;
                 else if (TSEFinder.screenPosition.x < 150)
                     auto = 2;
                 else
-                    auto = 1;
+                    auto = 3;
 
                 telemetry.addData("auto", auto);
+                telemetry.addData("X", TSEFinder.screenPosition.x);
                 telemetry.update();
             }
         }
-        //red auto
+        //red auto ------RED AUTO STUFF-------
         else
         {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -138,15 +139,16 @@ public class BlueCycleAuto extends LinearOpMode
 
             while (!isStopRequested() & !isStarted())
             {
-
+//                 -------RED AUTO VISION TRACKER--------
                 if (TSEFinder.screenPosition.x > 150)
-                    auto = 1;
+                    auto = 3;
                 else if (TSEFinder.screenPosition.x > 20)
                     auto = 2;
                 else
-                    auto = 3;
+                    auto = 1;
 
                 telemetry.addData("auto", auto);
+                telemetry.addData("X", TSEFinder.screenPosition.x);
                 telemetry.update();
             }
         }

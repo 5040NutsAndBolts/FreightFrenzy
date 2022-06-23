@@ -99,13 +99,14 @@ public class BlueDuckAuto extends LinearOpMode
             while (!isStopRequested() & !isStarted()) {
 
                 if (TSEFinder.screenPosition.x < 10)
-                    auto = 3;
+                    auto = 1;
                 else if (TSEFinder.screenPosition.x < 150)
                     auto = 2;
                 else
-                    auto = 1;
+                    auto = 3;
 
                 telemetry.addData("auto", auto);
+                telemetry.addData("X", TSEFinder.screenPosition.x);
                 telemetry.update();
             }
         }
