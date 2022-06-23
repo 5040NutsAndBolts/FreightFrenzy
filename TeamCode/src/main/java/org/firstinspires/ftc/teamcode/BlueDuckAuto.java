@@ -173,8 +173,8 @@ public class BlueDuckAuto extends LinearOpMode
         colors[0] = robot.lineColorSensor.alpha();
 
         waitForStart();
-        robot.setVerticalPosition(.61);
-        robot.setHorizontalPosition(.44);
+        robot.setVerticalPosition(.408);
+        robot.setHorizontalPosition(.5);
         colors[1] = robot.lineColorSensor.alpha();
         double ambientIntakeColor = robot.intakeColorSensor.red();
         ElapsedTime totalAutoTime = new ElapsedTime();
@@ -272,7 +272,7 @@ public class BlueDuckAuto extends LinearOpMode
         e.startTime();
 
         //deposit preload
-        while(opModeIsActive() && e.seconds() < .6)
+        while(opModeIsActive() && e.seconds() < 1)
         {
             robot.drive(0,0,0);
             thisSideFlicker();
@@ -297,8 +297,7 @@ public class BlueDuckAuto extends LinearOpMode
         while (opModeIsActive() && distanceMoved < 350)
         {
             distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            //ternary op may be wrong sign this was just added and is untested
-            robot.drive(0, -.6 * autoType, (.58-autoType == -1 ? -.1:0) * autoType);
+            robot.drive(0, -.6 * autoType, .6 * autoType);
 
             thisSideRampUp();
             robot.depositNeutral();
@@ -315,9 +314,10 @@ public class BlueDuckAuto extends LinearOpMode
         while(opModeIsActive() && distanceMoved > -1800)
         {
             distanceMoved = autoType * (robot.frontRight.getCurrentPosition() + robot.backLeft.getCurrentPosition()) / 2;
-            robot.drive(0, (-.7 + .4 * (distanceMoved / -2000)) * autoType, 0);
+            robot.drive(0, (-.7 + .3 * (distanceMoved / -2000)) * autoType, 0);
 
             telemetry.addData("distance moved", distanceMoved);
+            telemetry.addLine("driveing towards wall");
             telemetry.update();
         }
 
@@ -325,7 +325,7 @@ public class BlueDuckAuto extends LinearOpMode
         distanceMoved = 0;
 
         //park in storage unit
-        while(opModeIsActive() && distanceMoved > -885 + (auto == -1 ? 200:0))
+        while(opModeIsActive() && distanceMoved > -885 + (autoType == -1 ? 300:0))
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
             robot.drive(-.6, 0, 0);

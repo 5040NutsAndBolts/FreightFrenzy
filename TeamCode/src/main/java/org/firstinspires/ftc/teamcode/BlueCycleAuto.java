@@ -162,8 +162,8 @@ public class BlueCycleAuto extends LinearOpMode
         robot.resetStaticMotors();
 
         waitForStart();
-        robot.setVerticalPosition(.61);
-        robot.setHorizontalPosition(.44);
+        robot.setVerticalPosition(.408);
+        robot.setHorizontalPosition(.5);
         colors[1] = robot.lineColorSensor.alpha();
         double ambientIntakeColor = robot.intakeColorSensor.red();
         ElapsedTime totalAutoTime = new ElapsedTime();

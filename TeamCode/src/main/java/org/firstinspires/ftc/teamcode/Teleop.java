@@ -14,9 +14,10 @@ import org.firstinspires.ftc.teamcode.helperclasses.HelperMethods;
 public class Teleop extends LinearOpMode
 {
     boolean leftStick1 = false;
+    boolean dPad1Pressed = false;
     boolean x2Pressed = false;
-    double horizontalPos=.44;
-    double verticalPos=.61;
+    double horizontalPos=.5;
+    double verticalPos=.408;
     boolean a2Pressed = false;
     boolean a1Pressed = false;
     boolean rightRampUp = true;
@@ -30,6 +31,7 @@ public class Teleop extends LinearOpMode
     boolean linkedDeposit = true;
     boolean tseMode = false;
     boolean invertedStrafe = false;
+    boolean constOutSpeed = false;
     ElapsedTime intakeTimer;
 
     ElapsedTime e;
@@ -37,6 +39,8 @@ public class Teleop extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
+
+
         e=new ElapsedTime();
         e.startTime();
         double lastTime=0;
@@ -60,13 +64,13 @@ public class Teleop extends LinearOpMode
 
         while (opModeIsActive())
         {
-            //I don't know what this does but I need right trigger for other stuff -Eleanor
-            /*if(gamepad2.right_trigger>.4)
+
+            if(gamepad2.right_trigger>.4)
             {
                 robot.depositSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 robot.depositSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
-            robot.updatePositionRoadRunner();*/
+            robot.updatePositionRoadRunner();
 
             robot.deposit();
 
@@ -89,6 +93,14 @@ public class Teleop extends LinearOpMode
             {
                 leftStick1 = false;
             }
+
+            if((gamepad1.dpad_down || gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_right) && !dPad1Pressed)
+            {
+                constOutSpeed = !constOutSpeed;
+                dPad1Pressed = true;
+            }
+            else
+                dPad1Pressed = false;
 
             //Slide outtake motor controller set up (linear slides)
             if(gamepad2.right_bumper&&!bumperPressed&&robot.depositLevel<2)
@@ -272,10 +284,14 @@ public class Teleop extends LinearOpMode
             else
             {
                 //capper
-                if(Math.abs(gamepad2.right_stick_y)>.1)
-                    robot.setOutPower(gamepad2.right_stick_y);
+                if(gamepad1.right_stick_y > .1)
+                    robot.setOutPower(gamepad1.right_stick_y);
+                else if(gamepad1.right_stick_y < -.1)
+                    robot.setOutPower(gamepad1.right_stick_y * (!gamepad1.right_stick_button?.15:1));
                 else
-                    robot.setOutPower(gamepad1.right_stick_y>0||gamepad1.right_stick_button?gamepad1.right_stick_y:gamepad1.right_stick_y*.15);
+                    robot.setOutPower(0 + (constOutSpeed?.07:0));
+
+                //robot.setOutPower(gamepad1.right_stick_y > 0 || gamepad1.right_stick_button ? gamepad1.right_stick_y : gamepad1.right_stick_y * .15);
 
                 horizontalPos=HelperMethods.clamp(0,horizontalPos+gamepad1.left_stick_x*(e.seconds()-lastTime)*.48,1);
                 verticalPos= HelperMethods.clamp(0,verticalPos+gamepad1.left_stick_y*(e.seconds()-lastTime)*.48,1);
@@ -289,6 +305,7 @@ public class Teleop extends LinearOpMode
 
             }
             else{
+
                 robot.setLeftDuckSpinnerPower(0);
             }*/
 
@@ -342,9 +359,11 @@ public class Teleop extends LinearOpMode
             telemetry.addData("Inverted Strafe", invertedStrafe);
             telemetry.addData("Slow-Mode", slowMode);
             telemetry.addData("TSE Mode", tseMode);
+            telemetry.addData("TSE resist", constOutSpeed);
             telemetry.addLine();
-            telemetry.addData("hozizontal", horizontalPos);
+            telemetry.addData("horizontal", horizontalPos);
             telemetry.addData("vertical", verticalPos);
+            telemetry.addData("pos", gamepad1.right_stick_y);
             /*telemetry.addData("Distance Moved", distanceMoved);
             telemetry.addData("front left", robot.frontLeft.getCurrentPosition());
             telemetry.addData("front right", robot.frontRight.getCurrentPosition());
