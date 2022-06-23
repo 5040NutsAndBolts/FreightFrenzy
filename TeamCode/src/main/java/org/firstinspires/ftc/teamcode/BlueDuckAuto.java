@@ -112,7 +112,11 @@ public class BlueDuckAuto extends LinearOpMode
         else
             {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Right Webcam"), cameraMonitorViewId);
+            OpenCvWebcam webcam;
+            if(autoType==1)
+                webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Left Webcam"), cameraMonitorViewId);
+            else
+                webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Right Webcam"), cameraMonitorViewId);
 
             webcam.setPipeline(new TSEFinder());
             webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
@@ -129,12 +133,24 @@ public class BlueDuckAuto extends LinearOpMode
 
             while (!isStopRequested() & !isStarted()) {
 
-                if (TSEFinder.screenPosition.x < 50)
-                    auto = 1;
-                else if (TSEFinder.screenPosition.x < 150)
-                    auto = 2;
+                if(autoType==1)
+                {
+                    if (TSEFinder.screenPosition.x < 90)
+                        auto = 1;
+                    else if (TSEFinder.screenPosition.x < 200)
+                        auto = 2;
+                    else
+                        auto = 3;
+                }
                 else
-                    auto = 3;
+                {
+                    if (TSEFinder.screenPosition.x < 25)
+                        auto = 1;
+                    else if (TSEFinder.screenPosition.x < 120)
+                        auto = 2;
+                    else
+                        auto = 3;
+                }
 
                 telemetry.addData("auto", auto);
                 telemetry.update();
@@ -236,25 +252,30 @@ public class BlueDuckAuto extends LinearOpMode
         distanceMoved = 0;
 
         //drive to hub
-        while(opModeIsActive() && distanceMoved < 1520)
+        while(opModeIsActive() && distanceMoved < 1525)
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
-            robot.drive(.3, 0, .19);
+            robot.drive(.3, 0.04*autoType, autoType*(.215+(autoType == 1 ? 0:0.02)));
 
             robot.depositLevel = auto - 1;
             robot.deposit();
             thisSideRampDown();
+
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.addLine("towards hub");
             telemetry.update();
         }
 
+        ElapsedTime e = new ElapsedTime();
+        e.startTime();
+
         //deposit preload
-        while(opModeIsActive() && totalAutoTime.seconds() < 13)
+        while(opModeIsActive() && e.seconds() < .6)
         {
             robot.drive(0,0,0);
             thisSideFlicker();
+            robot.deposit();
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.addLine("depositing");
@@ -264,11 +285,19 @@ public class BlueDuckAuto extends LinearOpMode
         AutoMethods.resetEncoders(robot);
         distanceMoved = 0;
 
+        e.reset();
+        robot.deposit();
+        thisSideRampUp();
+        robot.deposit();
+        while(e.seconds()<1)
+            robot.deposit();
+
         //strafe towards center
         while (opModeIsActive() && distanceMoved < 350)
         {
             distanceMoved = autoType * (robot.frontLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 2;
-            robot.drive(0, -.6 * autoType, .6);
+            //ternary op may be wrong sign this was just added and is untested
+            robot.drive(0, -.6 * autoType, (.58-autoType == -1 ? -.1:0) * autoType);
 
             thisSideRampUp();
             robot.depositNeutral();
@@ -282,10 +311,10 @@ public class BlueDuckAuto extends LinearOpMode
         distanceMoved = 0;
 
         //strafe against wall
-        while(opModeIsActive() && distanceMoved > -1900)
+        while(opModeIsActive() && distanceMoved > -1800)
         {
             distanceMoved = autoType * (robot.frontRight.getCurrentPosition() + robot.backLeft.getCurrentPosition()) / 2;
-            robot.drive(0, -.7 + .4 * (distanceMoved / -2000) * autoType, 0);
+            robot.drive(0, (-.7 + .4 * (distanceMoved / -2000)) * autoType, 0);
 
             telemetry.addData("distance moved", distanceMoved);
             telemetry.update();
@@ -295,7 +324,7 @@ public class BlueDuckAuto extends LinearOpMode
         distanceMoved = 0;
 
         //park in storage unit
-        while(opModeIsActive() && distanceMoved > -1050)
+        while(opModeIsActive() && distanceMoved > -885 + (auto == -1 ? 200:0))
         {
             distanceMoved = (robot.frontRight.getCurrentPosition() + robot.frontLeft.getCurrentPosition() + robot.backLeft.getCurrentPosition() + robot.backRight.getCurrentPosition()) / 4;
             robot.drive(-.6, 0, 0);

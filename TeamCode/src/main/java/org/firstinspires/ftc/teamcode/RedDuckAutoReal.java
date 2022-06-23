@@ -58,6 +58,15 @@ public class RedDuckAutoReal extends BlueDuckAuto
     }
 
     @Override
+    public void thisSideRampDown(){robot.leftRampDown();}
+
+    @Override
+    public void thisSideRampUp(){robot.leftRampUp();}
+
+    @Override
+    public void thisSideFlicker(){robot.depositLeft();}
+
+    @Override
     public void runOpMode() throws InterruptedException
     {
         super.autoType = -1;
